@@ -1,0 +1,28 @@
+# Make sure all text files use LF in the repository
+* text=auto eol=lf
+
+# Windows-specific scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Linux/Mac scripts always LF
+*.sh text eol=lf
+
+# Ensure consistent handling of common file types
+*.java text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.properties text eol=lf
+*.gradle text eol=lf
+*.md text eol=lf
+
+# Binary files - do not modify line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.zip binary
