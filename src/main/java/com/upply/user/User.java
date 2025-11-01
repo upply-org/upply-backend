@@ -29,7 +29,7 @@ import java.util.List;
 public class User implements UserDetails, Principal {
 
     @Id
-    @GeneratedValue  // generation type ??
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String firstName;
@@ -38,7 +38,9 @@ public class User implements UserDetails, Principal {
     @Column(unique = true)
     private String email;
 
+    @Column(nullable = false, length = 255)
     private String password;
+
     private String university;
     private String cv;
 
@@ -50,7 +52,6 @@ public class User implements UserDetails, Principal {
     private LocalDateTime createdDate;
 
     @LastModifiedDate
-    @Column(insertable = false)
     private LocalDateTime lastModifiedDate;
 
 
@@ -92,6 +93,19 @@ public class User implements UserDetails, Principal {
     }
 
     public String getFullName() {
+
+        if (firstName == null && lastName == null) {
+            return "";
+        }
+
+        if(lastName == null) {
+            return firstName;
+        }
+
+        if(firstName == null) {
+            return lastName;
+        }
+
         return firstName + " " + lastName;
     }
 }
