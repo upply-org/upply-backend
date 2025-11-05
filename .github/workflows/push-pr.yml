@@ -28,6 +28,8 @@ jobs:
           echo "DB_URL=${{ secrets.DB_URL }}" >> .env
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}" >> .env
 
       - name: Build with Maven
         run: mvn clean install -DskipTests
