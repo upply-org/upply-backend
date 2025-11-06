@@ -11,4 +11,5 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
 
 jwt:
+  secret-key: test-secret-key-for-testing-purposes-only-minimum-256-bits
   expiration: ${JWT_EXPIRATION:3600000}
