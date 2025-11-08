@@ -41,7 +41,7 @@ public class SecurityConfig {
 
                         //Anyone can access these endpoints without logging in
                         .requestMatchers(
-                                "/auth/**"
+                                "/api/auth"
                         )
                         .permitAll()
 
