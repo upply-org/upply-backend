@@ -23,12 +23,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Create .env file
-        run: |
-          echo "DB_URL=${{ secrets.DB_URL }}" >> .env
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-
       - name: Build with Maven
         run: mvn clean install -DskipTests
 
