@@ -44,18 +44,19 @@ public class JwtService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
+        extraClaims.put("authorities", authorities);
+
         return Jwts.builder()
 
-                // signs the token with your private key so it can’t be forged
-                .signWith(getSignInKey())
+                .setClaims(extraClaims)
 
                 .setSubject(userDetails.getUsername())
 
-                .setClaims(extraClaims)
-                .claim("authorities", authorities)
-
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+
+                // signs the token with your private key so it can’t be forged
+                .signWith(getSignInKey())
 
                 .compact();
     }

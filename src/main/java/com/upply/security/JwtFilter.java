@@ -1,5 +1,6 @@
 package com.upply.security;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,6 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
 
+
         // header field of the http request ===> (Authorization: Bearer eyJhbGciOiJIUzI1Ni...)
         final String authorizationHeader = request.getHeader("Authorization");
 
@@ -50,14 +52,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
 
+
         final String jwtToken = authorizationHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwtToken);
 
-
-        if(userEmail != null) {
+        try {
+            final String userEmail = jwtService.extractUsername(jwtToken);
 
             // Check If User Is Not Already Authenticated => we proceed to authenticate using the token
-            if(SecurityContextHolder.getContext().getAuthentication() == null) {
+            if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
@@ -72,10 +74,14 @@ public class JwtFilter extends OncePerRequestFilter {
                     // The current user for this request is this authenticated user
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-
             }
-
         }
+        catch (JwtException ex) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
 
 
         // Call the rest of the filter chain
