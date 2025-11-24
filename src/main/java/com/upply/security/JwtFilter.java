@@ -82,6 +82,8 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
         catch (JwtException ex) {
+            System.err.println("JWT Exception: " + ex.getMessage());
+            ex.printStackTrace();
             filterChain.doFilter(request, response);
             return;
         }
