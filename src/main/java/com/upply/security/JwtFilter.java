@@ -32,12 +32,17 @@ public class JwtFilter extends OncePerRequestFilter {
             @Nonnull FilterChain filterChain) throws ServletException, IOException
     {
 
+//        System.out.println("Context Path: " + request.getContextPath());
+//        System.out.println("Servlet Path: " + request.getServletPath());
+//        System.out.println("Request URI: " + request.getRequestURI());
+//        System.out.println("Path Info: " + request.getPathInfo());
+
+
         // skip authentication and call the rest of the filter chain; user stays unauthenticated.
-        if(request.getServletPath().contains("/api/auth")) {
+        if(request.getServletPath().startsWith("/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
-
 
 
 

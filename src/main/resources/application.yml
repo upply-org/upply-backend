@@ -24,10 +24,30 @@ spring:
       hibernate:
         format_sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
+  port: 8080
   servlet:
-    context-path: /api/
+    context-path: /api
+
+logging:
+  level:
+    org.springframework.security: DEBUG
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
   expiration: ${JWT_EXPIRATION}
+
+app:
+  activation-base-url: "http://localhost:8080/api/auth/activate"
