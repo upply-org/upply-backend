@@ -1,7 +1,6 @@
 spring:
   application:
     name: Upply-Test
-
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
@@ -33,6 +32,9 @@ spring:
           auth: false
           starttls:
             enable: false
+  threads:
+    virtual:
+      enabled: true
 
 server:
   port: 0

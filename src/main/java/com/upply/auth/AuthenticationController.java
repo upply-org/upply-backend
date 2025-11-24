@@ -30,7 +30,7 @@ public class AuthenticationController {
         return ResponseEntity.ok("Account activated successfully");
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
 
         return ResponseEntity.ok(authService.login(request));
