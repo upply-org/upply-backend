@@ -23,7 +23,7 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
     }
 
-    @GetMapping("/activate")
+    @PostMapping("/activate")
     public ResponseEntity<?> activate(@RequestParam("token") String activationToken) {
 
         authService.activate(activationToken);

@@ -22,7 +22,7 @@ public class ActivationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    String token;
+    private String token;
 
     private LocalDateTime createdAt;
 
@@ -31,6 +31,6 @@ public class ActivationToken {
     private boolean used;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 }
