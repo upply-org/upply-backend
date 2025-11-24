@@ -43,7 +43,11 @@ public class SecurityConfig {
 
                         //Anyone can access these endpoints without logging in
                         .requestMatchers(
-                                "/auth/**"
+                                "/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**"
                         )
                         .permitAll()
 
