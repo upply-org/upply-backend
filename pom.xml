@@ -84,6 +84,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.19.0</version>
+            <scope>test</scope>
+        </dependency>
+
 
 
 		<!--JWT dependencies-->
@@ -130,8 +137,12 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-data</artifactId>
         </dependency>
-
-	</dependencies>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>

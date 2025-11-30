@@ -1,0 +1,45 @@
+package com.upply.skill;
+
+public enum SkillCategory {
+    // -----------------
+    // PROGRAMMING & TECH
+    // -----------------
+    BACKEND_DEVELOPMENT,
+    FRONTEND_DEVELOPMENT,
+    MOBILE_DEVELOPMENT,
+    DATA_SCIENCE,
+    MACHINE_LEARNING,
+    DEVOPS,
+    CLOUD_ENGINEERING,
+    CYBER_SECURITY,
+    SOFTWARE_TESTING,
+    GAME_DEVELOPMENT,
+    EMBEDDED_SYSTEMS,
+    UI_UX_DESIGN,
+    BLOCKCHAIN,
+    DATABASE_ENGINEERING,
+
+    // -----------------
+    // BUSINESS & MANAGEMENT
+    // -----------------
+    PROJECT_MANAGEMENT,
+    PRODUCT_MANAGEMENT,
+    BUSINESS_ANALYSIS,
+    ENTREPRENEURSHIP,
+    MARKETING,
+    SALES,
+    FINANCE,
+    HUMAN_RESOURCES,
+    ACCOUNTING,
+    OPERATIONS_MANAGEMENT,
+    CUSTOMER_SUPPORT,
+
+    // -----------------
+    // SOFT SKILLS
+    // -----------------
+    COMMUNICATION,
+    TEAMWORK,
+    LEADERSHIP,
+    PROBLEM_SOLVING,
+    TIME_MANAGEMENT
+}

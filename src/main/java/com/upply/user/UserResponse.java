@@ -1,6 +1,9 @@
 package com.upply.user;
 
+import com.upply.skill.SkillResponse;
 import lombok.*;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,4 +16,5 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String university;
+    private Set<SkillResponse> skills;
 }
