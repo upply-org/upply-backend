@@ -1,6 +1,7 @@
 package com.upply.user;
 
 
+import com.upply.skill.Skill;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,7 +13,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Getter
@@ -54,7 +57,13 @@ public class User implements UserDetails, Principal {
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
 
-
+    @ManyToMany
+    @JoinTable(
+            name = "users_skills",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
+    Set<Skill> userSkills = new HashSet<>();
 
 
     @Override
@@ -98,11 +107,11 @@ public class User implements UserDetails, Principal {
             return "";
         }
 
-        if(lastName == null) {
+        if (lastName == null) {
             return firstName;
         }
 
-        if(firstName == null) {
+        if (firstName == null) {
             return lastName;
         }
 
