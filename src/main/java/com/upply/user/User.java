@@ -1,7 +1,10 @@
 package com.upply.user;
 
 
+import com.upply.experience.Experience;
+import com.upply.project.Project;
 import com.upply.skill.Skill;
+import com.upply.socialLink.SocialLink;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -12,10 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Getter
@@ -65,6 +65,14 @@ public class User implements UserDetails, Principal {
     )
     Set<Skill> userSkills = new HashSet<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<Experience> experiences = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Project> projects = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<SocialLink> socialLinks = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

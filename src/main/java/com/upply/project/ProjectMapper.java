@@ -1,0 +1,29 @@
+package com.upply.project;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class ProjectMapper {
+    public Project toProject(ProjectRequest projectRequest){
+        return Project.builder()
+                .title(projectRequest.title())
+                .description(projectRequest.description())
+                .projectUrl(projectRequest.projectUrl())
+                .startDate(projectRequest.startDate())
+                .endDate(projectRequest.endDate())
+                .technologies(projectRequest.technologies())
+                .build();
+    }
+
+    public ProjectResponse toProjectResponse(Project project){
+        return ProjectResponse.builder()
+                .Id(project.getId())
+                .title(project.getTitle())
+                .description(project.getDescription())
+                .projectUrl(project.getProjectUrl())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
+                .technologies(project.getTechnologies())
+                .build();
+    }
+}
