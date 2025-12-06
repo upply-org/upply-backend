@@ -1,19 +1,20 @@
 package com.upply.experience;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Date;
 
 public record ExperienceRequest(
-        @NotNull
+        @NotBlank
         String title,
-        @NotNull
+        @NotBlank
         String organization,
-        @NotNull
+        @NotBlank
         Date startDate,
 
         Date endDate,
-        @NotNull
+        @NotBlank
         String description
 ) {
 }

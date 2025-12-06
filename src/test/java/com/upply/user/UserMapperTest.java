@@ -142,7 +142,7 @@ class UserMapperTest {
                 .build();
 
         testProjectResponse1 = ProjectResponse.builder()
-                .Id(1L)
+                .id(1L)
                 .title("E-Commerce Platform")
                 .description("A full-stack e-commerce application")
                 .projectUrl("https://github.com/user/ecommerce")
@@ -152,7 +152,7 @@ class UserMapperTest {
                 .build();
 
         testProjectResponse2 = ProjectResponse.builder()
-                .Id(2L)
+                .id(2L)
                 .title("Task Management App")
                 .description("A task management application")
                 .projectUrl("https://github.com/user/taskapp")

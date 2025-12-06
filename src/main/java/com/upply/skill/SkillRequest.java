@@ -1,5 +1,6 @@
 package com.upply.skill;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -9,9 +10,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SkillRequest {
-    @NotNull
+    @NotBlank
     String skillName;
 
-    @NotNull
+    @NotBlank
     SkillCategory skillCategory;
 }

@@ -177,7 +177,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(testProject);
 
         assertNotNull(result);
-        assertEquals(1L, result.Id());
+        assertEquals(1L, result.id());
         assertEquals("E-Commerce Platform", result.title());
         assertEquals("A full-stack e-commerce application built with Java and Spring Boot", result.description());
         assertEquals("https://github.com/user/ecommerce", result.projectUrl());
@@ -202,7 +202,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(projectWithNullEndDate);
 
         assertNotNull(result);
-        assertEquals(2L, result.Id());
+        assertEquals(2L, result.id());
         assertEquals("Ongoing Project", result.title());
         assertEquals("A project currently in development", result.description());
         assertEquals("https://github.com/user/ongoing", result.projectUrl());
@@ -227,7 +227,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(projectWithNullUrl);
 
         assertNotNull(result);
-        assertEquals(3L, result.Id());
+        assertEquals(3L, result.id());
         assertEquals("Private Project", result.title());
         assertEquals("A private project without public URL", result.description());
         assertNull(result.projectUrl());
@@ -250,7 +250,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(projectWithNullTechnologies);
 
         assertNotNull(result);
-        assertEquals(4L, result.Id());
+        assertEquals(4L, result.id());
         assertEquals("Project Without Tech", result.title());
         assertNull(result.technologies());
     }
@@ -274,7 +274,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(differentProject);
 
         assertNotNull(result);
-        assertEquals(5L, result.Id());
+        assertEquals(5L, result.id());
         assertEquals("Mobile App", result.title());
         assertEquals("A mobile application for iOS and Android", result.description());
         assertEquals("https://github.com/user/mobileapp", result.projectUrl());
@@ -299,7 +299,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(projectWithEmptyStrings);
 
         assertNotNull(result);
-        assertEquals(6L, result.Id());
+        assertEquals(6L, result.id());
         assertEquals("", result.title());
         assertEquals("", result.description());
         assertEquals("", result.projectUrl());
@@ -322,7 +322,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(projectWithNulls);
 
         assertNotNull(result);
-        assertEquals(7L, result.Id());
+        assertEquals(7L, result.id());
         assertNull(result.title());
         assertNull(result.description());
         assertNull(result.projectUrl());
@@ -385,7 +385,7 @@ class ProjectMapperTest {
         ProjectResponse result = projectMapper.toProjectResponse(testProject);
 
         assertNotNull(result);
-        assertEquals(1L, result.Id());
+        assertEquals(1L, result.id());
         assertEquals("E-Commerce Platform", result.title());
         // Note: User is not included in ProjectResponse, which is correct
     }

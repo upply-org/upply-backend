@@ -163,7 +163,7 @@ class UserServiceTest {
                 .build();
 
         testProjectResponse = ProjectResponse.builder()
-                .Id(1L)
+                .id(1L)
                 .title("E-Commerce Platform")
                 .description("A full-stack e-commerce application")
                 .projectUrl("https://github.com/user/ecommerce")
@@ -738,7 +738,7 @@ class UserServiceTest {
 
         assertNotNull(result);
         assertEquals(testProjectResponse, result);
-        assertEquals(1L, result.Id());
+        assertEquals(1L, result.id());
         assertEquals("E-Commerce Platform", result.title());
         verify(projectRepository).findProjectById(1L);
         verify(projectMapper).toProjectResponse(testProject);
@@ -1010,21 +1010,21 @@ class UserServiceTest {
     @Test
     @DisplayName("deleteUserLinks should delete social link successfully")
     void shouldDeleteUserLinksSuccessfully() {
-        doNothing().when(socialLinkRepository).deleteSocialLinById(1L);
+        doNothing().when(socialLinkRepository).deleteSocialLinkById(1L);
 
         userService.deleteUserLinks(1L);
 
-        verify(socialLinkRepository).deleteSocialLinById(1L);
+        verify(socialLinkRepository).deleteSocialLinkById(1L);
     }
 
     @Test
     @DisplayName("deleteUserLinks should handle deletion of non-existent social link")
     void shouldHandleDeleteNonExistentSocialLink() {
-        doNothing().when(socialLinkRepository).deleteSocialLinById(999L);
+        doNothing().when(socialLinkRepository).deleteSocialLinkById(999L);
 
         userService.deleteUserLinks(999L);
 
-        verify(socialLinkRepository).deleteSocialLinById(999L);
+        verify(socialLinkRepository).deleteSocialLinkById(999L);
     }
 }
 

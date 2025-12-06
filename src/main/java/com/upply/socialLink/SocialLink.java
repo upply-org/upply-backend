@@ -16,6 +16,7 @@ public class SocialLink {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String url;
+    @Enumerated(EnumType.STRING)
     private SocialType socialType;
 
     @ManyToOne

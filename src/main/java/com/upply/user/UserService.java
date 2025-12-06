@@ -133,7 +133,6 @@ public class UserService {
         experienceRepository.save(experience);
     }
 
-    @Transactional
     public void deleteUserExperience(Long experienceId) {
         experienceRepository.deleteExperienceById(experienceId);
     }
@@ -176,7 +175,6 @@ public class UserService {
         projectRepository.save(project);
     }
 
-    @Transactional
     public void deleteUserProject(Long projectId) {
         projectRepository.deleteProjectById(projectId);
     }
@@ -216,9 +214,8 @@ public class UserService {
         socialLinkRepository.save(socialLink);
     }
 
-    @Transactional
     public void deleteUserLinks(long socialId){
-        socialLinkRepository.deleteSocialLinById(socialId);
+        socialLinkRepository.deleteSocialLinkById(socialId);
     }
 
 }
