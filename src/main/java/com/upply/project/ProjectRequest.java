@@ -1,5 +1,6 @@
 package com.upply.project;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -7,9 +8,9 @@ import java.util.Date;
 
 @Builder
 public record ProjectRequest(
-        @NotNull
+        @NotBlank
         String title,
-        @NotNull
+        @NotBlank
         String description,
         String projectUrl,
         @NotNull

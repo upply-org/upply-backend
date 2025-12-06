@@ -1,9 +1,10 @@
 package com.upply.socialLink;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record SocialLinkRequest(
-        @NotNull
+        @NotBlank
         String url,
         SocialType socialType
 ) {

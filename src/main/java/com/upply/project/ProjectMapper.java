@@ -17,7 +17,7 @@ public class ProjectMapper {
 
     public ProjectResponse toProjectResponse(Project project){
         return ProjectResponse.builder()
-                .Id(project.getId())
+                .id(project.getId())
                 .title(project.getTitle())
                 .description(project.getDescription())
                 .projectUrl(project.getProjectUrl())

@@ -6,7 +6,7 @@ import java.util.Date;
 
 @Builder
 public record ProjectResponse(
-        Long Id,
+        Long id,
         String title,
         String description,
         String projectUrl,

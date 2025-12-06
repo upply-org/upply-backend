@@ -1,13 +1,14 @@
 package com.upply.user;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 @Builder
 public record UserRequest(
-        @NotNull
+        @NotBlank
         String firstName,
-        @NotNull
+        @NotBlank
         String lastName,
 
         String university
