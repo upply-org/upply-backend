@@ -10,7 +10,7 @@ public record ExperienceRequest(
         String title,
         @NotBlank
         String organization,
-        @NotBlank
+        @NotNull
         Date startDate,
 
         Date endDate,

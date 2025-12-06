@@ -13,6 +13,6 @@ public class SkillRequest {
     @NotBlank
     String skillName;
 
-    @NotBlank
+    @NotNull
     SkillCategory skillCategory;
 }
