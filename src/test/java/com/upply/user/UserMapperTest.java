@@ -1,9 +1,21 @@
 package com.upply.user;
 
-import com.upply.experience.*;
-import com.upply.project.*;
-import com.upply.skill.*;
-import com.upply.socialLink.*;
+import com.upply.profile.experience.Experience;
+import com.upply.profile.experience.dto.ExperienceMapper;
+import com.upply.profile.experience.dto.ExperienceResponse;
+import com.upply.profile.project.Project;
+import com.upply.profile.project.dto.ProjectMapper;
+import com.upply.profile.project.dto.ProjectResponse;
+import com.upply.profile.skill.Skill;
+import com.upply.profile.skill.SkillCategory;
+import com.upply.profile.skill.dto.SkillMapper;
+import com.upply.profile.skill.dto.SkillResponse;
+import com.upply.profile.socialLink.SocialLink;
+import com.upply.profile.socialLink.dto.SocialLinkMapper;
+import com.upply.profile.socialLink.dto.SocialLinkResponse;
+import com.upply.profile.socialLink.SocialType;
+import com.upply.user.dto.UserMapper;
+import com.upply.user.dto.UserResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
