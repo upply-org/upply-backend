@@ -40,8 +40,8 @@ class SkillServiceTest {
     @BeforeEach
     void setUp() {
         testSkillRequest = new SkillRequest();
-        testSkillRequest.skillName = "Java Programming";
-        testSkillRequest.skillCategory = SkillCategory.BACKEND_DEVELOPMENT;
+        testSkillRequest.setSkillName("Java Programming");
+        testSkillRequest.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         testSkill = Skill.builder()
                 .id(1L)
@@ -143,8 +143,8 @@ class SkillServiceTest {
                 .build();
 
         SkillRequest updateRequest = new SkillRequest();
-        updateRequest.skillName = "Updated Name";
-        updateRequest.skillCategory = SkillCategory.FRONTEND_DEVELOPMENT;
+        updateRequest.setSkillName("Updated Name");
+        updateRequest.setSkillCategory(SkillCategory.FRONTEND_DEVELOPMENT);
 
         when(skillRepository.findById(5L)).thenReturn(Optional.of(existingSkill));
 

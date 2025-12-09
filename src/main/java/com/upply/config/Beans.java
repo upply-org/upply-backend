@@ -10,7 +10,7 @@ import org.springframework.data.domain.AuditorAware;
 public class Beans {
 
     @Bean
-    public AuditorAware<Long> auditorProvider() {
+    public AuditorAware<Long> auditorAware() {
         return new AuditAware();
     }
 
