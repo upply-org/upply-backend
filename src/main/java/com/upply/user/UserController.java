@@ -1,13 +1,15 @@
 package com.upply.user;
 
-import com.upply.experience.ExperienceRequest;
-import com.upply.experience.ExperienceResponse;
-import com.upply.project.ProjectRequest;
-import com.upply.project.ProjectResponse;
-import com.upply.skill.SkillRequest;
-import com.upply.skill.SkillResponse;
-import com.upply.socialLink.SocialLinkRequest;
-import com.upply.socialLink.SocialLinkResponse;
+import com.upply.profile.experience.dto.ExperienceRequest;
+import com.upply.profile.experience.dto.ExperienceResponse;
+import com.upply.profile.project.dto.ProjectRequest;
+import com.upply.profile.project.dto.ProjectResponse;
+import com.upply.profile.skill.dto.SkillRequest;
+import com.upply.profile.skill.dto.SkillResponse;
+import com.upply.profile.socialLink.dto.SocialLinkRequest;
+import com.upply.profile.socialLink.dto.SocialLinkResponse;
+import com.upply.user.dto.UserRequest;
+import com.upply.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

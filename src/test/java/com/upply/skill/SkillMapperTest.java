@@ -1,5 +1,9 @@
 package com.upply.skill;
 
+import com.upply.profile.skill.*;
+import com.upply.profile.skill.dto.SkillMapper;
+import com.upply.profile.skill.dto.SkillRequest;
+import com.upply.profile.skill.dto.SkillResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

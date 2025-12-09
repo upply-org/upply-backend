@@ -1,10 +1,11 @@
 package com.upply.user;
 
 
-import com.upply.experience.Experience;
-import com.upply.project.Project;
-import com.upply.skill.Skill;
-import com.upply.socialLink.SocialLink;
+import com.upply.profile.experience.Experience;
+import com.upply.job.Job;
+import com.upply.profile.project.Project;
+import com.upply.profile.skill.Skill;
+import com.upply.profile.socialLink.SocialLink;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -63,7 +64,11 @@ public class User implements UserDetails, Principal {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
-    Set<Skill> userSkills = new HashSet<>();
+    private Set<Skill> userSkills = new HashSet<>();
+
+    @OneToMany(mappedBy = "postedBy", cascade = CascadeType.ALL)
+    private List<Job> postedJobs = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "user")
     private List<Experience> experiences = new ArrayList<>();

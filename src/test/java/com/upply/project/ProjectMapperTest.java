@@ -1,5 +1,9 @@
 package com.upply.project;
 
+import com.upply.profile.project.Project;
+import com.upply.profile.project.dto.ProjectMapper;
+import com.upply.profile.project.dto.ProjectRequest;
+import com.upply.profile.project.dto.ProjectResponse;
 import com.upply.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

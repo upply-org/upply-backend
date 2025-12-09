@@ -1,5 +1,9 @@
 package com.upply.socialLink;
 
+import com.upply.profile.socialLink.*;
+import com.upply.profile.socialLink.dto.SocialLinkMapper;
+import com.upply.profile.socialLink.dto.SocialLinkRequest;
+import com.upply.profile.socialLink.dto.SocialLinkResponse;
 import com.upply.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
