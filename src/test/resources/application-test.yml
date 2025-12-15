@@ -1,6 +1,7 @@
 spring:
   application:
     name: Upply-Test
+
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
     driver-class-name: org.h2.Driver
@@ -15,7 +16,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -32,9 +33,33 @@ spring:
           auth: false
           starttls:
             enable: false
+
   threads:
     virtual:
       enabled: true
+
+  # Disable AI and Redis for tests
+  ai:
+    google:
+      genai:
+        embedding:
+          enabled: false
+          api-key: test-key
+    vectorstore:
+      redis:
+        initialize-schema: false
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+  # Exclude Redis auto-configurations
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
 
 server:
   port: 0
@@ -45,9 +70,10 @@ logging:
   level:
     org.springframework.security: INFO
     org.hibernate: WARN
+    com.upply: DEBUG
 
 jwt:
-  secret-key: test-secret-key-for-testing-purposes-only-must-be-at-least-256-bits-long-for-hs256
+  secret-key: test-secret-key-min-256-bits-hs256-algorithm-requirement-met-here
   expiration: 3600000
 
 app:
