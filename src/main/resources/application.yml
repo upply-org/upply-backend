@@ -22,7 +22,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   mail:
     host: smtp.gmail.com
     port: 587
@@ -39,6 +38,26 @@ spring:
   threads:
     virtual:
       enabled: true
+  ai:
+    google:
+      genai:
+        embedding:
+          api-key: ${GEMINI_API}
+          text:
+            options:
+              model: text-embedding-004
+              task-type: semantic_similarity
+    vectorstore:
+      redis:
+        initialize-schema: true
+        index-name: upply-vector-index
+        prefix: upply:embedding
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
 server:
   port: 8080
   servlet:
