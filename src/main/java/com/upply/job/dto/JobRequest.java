@@ -38,7 +38,7 @@ public class JobRequest {
     private String location;
 
     @NotBlank(message = "Description is required")
-    @Size(min = 20, max = 5000, message = "Description must be between 20 and 2000 characters")
+    @Size(min = 20, max = 5000, message = "Description must be between 20 and 5000 characters")
     private String description;
 
     @NotEmpty(message = "At least one skill is required")

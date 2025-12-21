@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +33,7 @@ public class JobService {
     private final JobRepository jobRepository;
     private final SkillRepository skillRepository;
 
+    @Transactional
     public JobResponse createJob(@Valid JobRequest request, Authentication connectedUser) {
 
         Set<Skill> skills = new HashSet<>(
@@ -83,6 +85,7 @@ public class JobService {
         );
     }
 
+    @Transactional
     public JobResponse updateJob(Long id, JobUpdateRequest request, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
@@ -131,6 +134,7 @@ public class JobService {
         return jobMapper.toJobResponse(savedJob);
     }
 
+    @Transactional
     public JobResponse closeJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
@@ -152,6 +156,7 @@ public class JobService {
         return jobMapper.toJobResponse(savedJob);
     }
 
+    @Transactional
     public JobResponse pauseJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
@@ -177,6 +182,7 @@ public class JobService {
         return jobMapper.toJobResponse(savedJob);
     }
 
+    @Transactional
     public JobResponse resumeJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
