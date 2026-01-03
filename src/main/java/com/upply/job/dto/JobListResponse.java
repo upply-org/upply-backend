@@ -11,7 +11,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JobListResponse {
-
+    private Long id;
     private String title;
     private String organizationName;
 
