@@ -39,6 +39,7 @@ public class JobMapper {
     public JobResponse toJobResponse(Job job) {
 
         return JobResponse.builder()
+                .id(job.getId())
                 .title(job.getTitle())
                 .organizationName("organizationName")
 
@@ -62,6 +63,7 @@ public class JobMapper {
     public JobListResponse toJobListResponse(Job job) {
 
         return JobListResponse.builder()
+                .id(job.getId())
                 .title(job.getTitle())
                 .organizationName("organizationName")
 

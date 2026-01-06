@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JobResponse {
-
+    private Long id;
     private String title;
     private String organizationName;
 
