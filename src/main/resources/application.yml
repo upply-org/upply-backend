@@ -59,9 +59,10 @@ spring:
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
 server:
-  port: 8080
+  port: ${port:8080}
   servlet:
     context-path: /api/v1
+  address: 0.0.0.0
 
 logging:
   level:
