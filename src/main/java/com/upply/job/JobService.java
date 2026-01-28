@@ -32,6 +32,7 @@ public class JobService {
     private final JobMapper jobMapper;
     private final JobRepository jobRepository;
     private final SkillRepository skillRepository;
+    private final JobMatchingService jobMatchingService;
 
     @Transactional
     public JobResponse createJob(@Valid JobRequest request, Authentication connectedUser) {
@@ -50,8 +51,13 @@ public class JobService {
         job.setPostedBy(user);
 
         Job savedJob = jobRepository.save(job);
+
+        // Store job embedding
+        jobMatchingService.storeJobEmbedding(savedJob);
+
         return jobMapper.toJobResponse(savedJob);
     }
+
 
     public JobResponse getJob(Long id) {
 
@@ -84,6 +90,21 @@ public class JobService {
                 jobs.isLast()
         );
     }
+
+    public List<MatchedJobListResponse> getMatchedJobs(Authentication connectedUser) {
+
+        User user = (User) connectedUser.getPrincipal();
+
+        List<JobMatchingService.JobWithScore> matchedJobsWithScores = jobMatchingService.findSimilarJobs(user, 50);
+
+        return matchedJobsWithScores.stream()
+                .map(jobWithScore -> jobMapper.toMatchedJobListResponse(
+                        jobWithScore.getJob(),
+                        jobWithScore.getScore()
+                ))
+                .toList();
+    }
+
 
     @Transactional
     public JobResponse updateJob(Long id, JobUpdateRequest request, Authentication connectedUser) {
@@ -131,6 +152,10 @@ public class JobService {
         }
 
         Job savedJob = jobRepository.save(job);
+
+        // Update job embedding
+        jobMatchingService.storeJobEmbedding(savedJob);
+
         return jobMapper.toJobResponse(savedJob);
     }
 
@@ -153,6 +178,10 @@ public class JobService {
         job.setStatus(JobStatus.CLOSED);
 
         Job savedJob = jobRepository.save(job);
+
+        // Delete embedding from vector store
+        jobMatchingService.deleteJobEmbedding(savedJob.getId());
+
         return jobMapper.toJobResponse(savedJob);
     }
 
@@ -179,6 +208,10 @@ public class JobService {
         job.setStatus(JobStatus.PAUSED);
 
         Job savedJob = jobRepository.save(job);
+
+        // Update embedding with PAUSED status (for filtering)
+        jobMatchingService.storeJobEmbedding(savedJob);
+
         return jobMapper.toJobResponse(savedJob);
     }
 
@@ -205,6 +238,10 @@ public class JobService {
         job.setStatus(JobStatus.OPEN);
 
         Job savedJob = jobRepository.save(job);
+
+        // Update embedding with OPEN status (for filtering)
+        jobMatchingService.storeJobEmbedding(savedJob);
+
         return jobMapper.toJobResponse(savedJob);
     }
 }

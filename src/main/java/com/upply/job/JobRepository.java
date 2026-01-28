@@ -10,5 +10,4 @@ import org.springframework.stereotype.Repository;
 public interface JobRepository extends JpaRepository<Job, Long> {
 
     Page<Job> findByStatus(JobStatus status, Pageable pageable);
-
 }

@@ -58,6 +58,7 @@ spring:
       port: ${REDIS_PORT}
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
+      # For production, consider adding connection pooling
 server:
   port: 8080
   servlet:
@@ -66,6 +67,8 @@ server:
 logging:
   level:
     org.springframework.security: DEBUG
+    org.springframework.ai: DEBUG
+    com.upply.job.JobMatchingService: DEBUG
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
