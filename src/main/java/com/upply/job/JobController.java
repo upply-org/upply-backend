@@ -3,10 +3,7 @@ package com.upply.job;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
 import com.upply.common.PageResponse;
-import com.upply.job.dto.JobListResponse;
-import com.upply.job.dto.JobRequest;
-import com.upply.job.dto.JobUpdateRequest;
-import com.upply.job.dto.JobResponse;
+import com.upply.job.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/jobs")
@@ -63,6 +62,15 @@ public class JobController {
             Authentication connectedUser
     ) {
         return ResponseEntity.ok(jobService.getAllOpenJobs(pageNumber, size, connectedUser));
+    }
+
+    @GetMapping("/matched")
+    @Operation(
+            summary = "Get matched jobs for current user",
+            description = "Returns jobs that match the user's profile using AI-powered similarity search. Jobs are ranked by match score."
+    )
+    public ResponseEntity<List<MatchedJobListResponse>> getMatchedJobs(Authentication connectedUser) {
+        return ResponseEntity.ok(jobService.getMatchedJobs(connectedUser));
     }
 
     @PatchMapping("/{id}")

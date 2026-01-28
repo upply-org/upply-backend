@@ -76,4 +76,24 @@ public class JobMapper {
                 .createdDate(job.getCreatedDate())
                 .build();
     }
+
+    public MatchedJobListResponse toMatchedJobListResponse(Job job, Double matchScore) {
+
+        return MatchedJobListResponse.builder()
+                .id(job.getId())
+                .title(job.getTitle())
+                .organizationName("organizationName")
+
+                .type(job.getType().toApiValue())
+                .seniority(job.getSeniority().toApiValue())
+                .model(job.getModel().toApiValue())
+                .status(job.getStatus().toApiValue())
+
+                .location(job.getLocation())
+                .createdDate(job.getCreatedDate())
+
+                .matchScore(matchScore)
+                .matchPercentage((int) Math.round(matchScore * 100))
+                .build();
+    }
 }
