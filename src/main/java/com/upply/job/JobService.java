@@ -1,5 +1,10 @@
 package com.upply.job;
 
+import com.upply.application.Application;
+import com.upply.application.ApplicationRepository;
+import com.upply.application.dto.ApplicationMapper;
+import com.upply.application.dto.ApplicationResponse;
+import com.upply.application.enums.ApplicationStatus;
 import com.upply.common.PageResponse;
 import com.upply.exception.OperationNotPermittedException;
 import com.upply.job.dto.*;
@@ -20,18 +25,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class JobService {
 
     private final JobMapper jobMapper;
+    private final ApplicationMapper applicationMapper;
     private final JobRepository jobRepository;
     private final SkillRepository skillRepository;
+    private final ApplicationRepository applicationRepository;
     private final JobMatchingService jobMatchingService;
 
     @Transactional
@@ -41,7 +45,7 @@ public class JobService {
                 skillRepository.findAllById(request.getSkillIds())
         );
 
-        if(skills.size() != request.getSkillIds().size()) {
+        if (skills.size() != request.getSkillIds().size()) {
             throw new IllegalArgumentException("One or more skills do not exist");
         }
 
@@ -112,11 +116,11 @@ public class JobService {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Job with ID " + id + " not found"));
 
-       User user = ((User) connectedUser.getPrincipal());
+        User user = ((User) connectedUser.getPrincipal());
 
-       if(!Objects.equals(job.getPostedBy().getId(), user.getId())) {
-           throw new OperationNotPermittedException("You are not permitted to update this job");
-       }
+        if (!Objects.equals(job.getPostedBy().getId(), user.getId())) {
+            throw new OperationNotPermittedException("You are not permitted to update this job");
+        }
 
 
         if (request.getTitle() != null) {
@@ -244,4 +248,49 @@ public class JobService {
 
         return jobMapper.toJobResponse(savedJob);
     }
+
+    public PageResponse<ApplicationResponse> getJobApplications(
+            Long jobId, int pageNumber, int size
+    ) {
+        Pageable pageable = (Pageable) PageRequest.of(pageNumber, size, Sort.by("lastUpdate").descending());
+
+        Page<Application> applications = applicationRepository.getJobApplications(jobId ,pageable);
+
+        List<ApplicationResponse> applicationResponses = applications.stream()
+                .map(applicationMapper::toApplicationResponse)
+                .toList();
+
+        return new PageResponse<>(
+                applicationResponses,
+                applications.getNumber(),
+                applications.getSize(),
+                applications.getTotalElements(),
+                applications.getTotalPages(),
+                applications.isFirst(),
+                applications.isLast()
+        );
+    }
+
+    public PageResponse<ApplicationResponse> getJobApplicationsByStatus(
+            Long jobId ,ApplicationStatus status ,int pageNumber, int size
+    ) {
+        Pageable pageable = (Pageable) PageRequest.of(pageNumber, size, Sort.by("lastUpdate").descending());
+
+        Page<Application> applications = applicationRepository.getApplicationByStatus(jobId, status, pageable);
+
+        List<ApplicationResponse> applicationResponses = applications.stream()
+                .map(applicationMapper::toApplicationResponse)
+                .toList();
+
+        return new PageResponse<>(
+                applicationResponses,
+                applications.getNumber(),
+                applications.getSize(),
+                applications.getTotalElements(),
+                applications.getTotalPages(),
+                applications.isFirst(),
+                applications.isLast()
+        );
+    }
+
 }
