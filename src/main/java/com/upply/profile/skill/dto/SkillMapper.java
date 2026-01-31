@@ -8,7 +8,6 @@ public class SkillMapper {
     public Skill toSkill(SkillRequest request){
         return Skill.builder()
                 .name(request.skillName)
-                .category(request.skillCategory)
                 .build();
     }
 
@@ -16,7 +15,6 @@ public class SkillMapper {
         return SkillResponse.builder()
                 .skillId(skill.getId())
                 .skillName(skill.getName())
-                .skillCategory(skill.getCategory())
                 .build();
     }
 }

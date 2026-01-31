@@ -27,12 +27,10 @@ class SkillMapperTest {
     void setUp() {
         testSkillRequest = new SkillRequest();
         testSkillRequest.setSkillName("Java Programming");
-        testSkillRequest.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         testSkill = Skill.builder()
                 .id(1L)
                 .name("Java Programming")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
     }
 
@@ -43,21 +41,6 @@ class SkillMapperTest {
 
         assertNotNull(result);
         assertEquals("Java Programming", result.getName());
-        assertEquals(SkillCategory.BACKEND_DEVELOPMENT, result.getCategory());
-    }
-
-    @Test
-    @DisplayName("toSkill should map SkillRequest with different category to Skill")
-    void shouldMapSkillRequestWithDifferentCategory() {
-        SkillRequest frontendRequest = new SkillRequest();
-        frontendRequest.setSkillName("React");
-        frontendRequest.setSkillCategory(SkillCategory.FRONTEND_DEVELOPMENT);
-
-        Skill result = skillMapper.toSkill(frontendRequest);
-
-        assertNotNull(result);
-        assertEquals("React", result.getName());
-        assertEquals(SkillCategory.FRONTEND_DEVELOPMENT, result.getCategory());
     }
 
     @Test
@@ -65,13 +48,11 @@ class SkillMapperTest {
     void shouldMapSkillRequestWithNullName() {
         SkillRequest requestWithNullName = new SkillRequest();
         requestWithNullName.setSkillName(null);
-        requestWithNullName.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         Skill result = skillMapper.toSkill(requestWithNullName);
 
         assertNotNull(result);
         assertNull(result.getName());
-        assertEquals(SkillCategory.BACKEND_DEVELOPMENT, result.getCategory());
     }
 
     @Test
@@ -82,7 +63,6 @@ class SkillMapperTest {
         assertNotNull(result);
         assertEquals(1L, result.skillId());
         assertEquals("Java Programming", result.skillName());
-        assertEquals(SkillCategory.BACKEND_DEVELOPMENT, result.skillCategory());
     }
 
     @Test
@@ -91,7 +71,6 @@ class SkillMapperTest {
         Skill differentSkill = Skill.builder()
                 .id(2L)
                 .name("Python")
-                .category(SkillCategory.DATA_SCIENCE)
                 .build();
 
         SkillResponse result = skillMapper.toSkillResponse(differentSkill);
@@ -99,7 +78,6 @@ class SkillMapperTest {
         assertNotNull(result);
         assertEquals(2L, result.skillId());
         assertEquals("Python", result.skillName());
-        assertEquals(SkillCategory.DATA_SCIENCE, result.skillCategory());
     }
 
     @Test
@@ -108,7 +86,6 @@ class SkillMapperTest {
         Skill skillWithNullName = Skill.builder()
                 .id(3L)
                 .name(null)
-                .category(SkillCategory.UI_UX_DESIGN)
                 .build();
 
         SkillResponse result = skillMapper.toSkillResponse(skillWithNullName);
@@ -116,34 +93,6 @@ class SkillMapperTest {
         assertNotNull(result);
         assertEquals(3L, result.skillId());
         assertNull(result.skillName());
-        assertEquals(SkillCategory.UI_UX_DESIGN, result.skillCategory());
-    }
-
-    @Test
-    @DisplayName("toSkillResponse should map Skill with all categories correctly")
-    void shouldMapSkillWithAllCategories() {
-        SkillCategory[] categories = {
-                SkillCategory.BACKEND_DEVELOPMENT,
-                SkillCategory.FRONTEND_DEVELOPMENT,
-                SkillCategory.MOBILE_DEVELOPMENT,
-                SkillCategory.DATA_SCIENCE,
-                SkillCategory.PROJECT_MANAGEMENT
-        };
-
-        for (int i = 0; i < categories.length; i++) {
-            Skill skill = Skill.builder()
-                    .id((long) (i + 10))
-                    .name("Skill " + i)
-                    .category(categories[i])
-                    .build();
-
-            SkillResponse result = skillMapper.toSkillResponse(skill);
-
-            assertNotNull(result);
-            assertEquals((long) (i + 10), result.skillId());
-            assertEquals("Skill " + i, result.skillName());
-            assertEquals(categories[i], result.skillCategory());
-        }
     }
 
     @Test
@@ -151,13 +100,11 @@ class SkillMapperTest {
     void shouldHandleEmptyStringSkillName() {
         SkillRequest requestWithEmptyName = new SkillRequest();
         requestWithEmptyName.setSkillName("");
-        requestWithEmptyName.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         Skill result = skillMapper.toSkill(requestWithEmptyName);
 
         assertNotNull(result);
         assertEquals("", result.getName());
-        assertEquals(SkillCategory.BACKEND_DEVELOPMENT, result.getCategory());
     }
 }
 

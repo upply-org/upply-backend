@@ -27,13 +27,6 @@ public class SkillService {
                 .toList();
     }
 
-    public List<SkillResponse> getSkillsByCategory(SkillCategory skillCategory) {
-        return skillRepository.findSkillsByCategory(skillCategory)
-                .stream()
-                .map(skillMapper::toSkillResponse)
-                .toList();
-    }
-
     public SkillResponse getSkillsByName(String name) {
         String normalizedName =
                 ((name == null) ? null : name.toLowerCase().replaceAll("\\s+", ""));
@@ -47,7 +40,6 @@ public class SkillService {
                 .orElseThrow(() -> new IllegalArgumentException("There is no skill with this skill ID"));
 
         skill.setName(skillRequest.getSkillName());
-        skill.setCategory(skillRequest.getSkillCategory());
 
         skillRepository.save(skill);
     }

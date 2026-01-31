@@ -41,17 +41,14 @@ class SkillServiceTest {
     void setUp() {
         testSkillRequest = new SkillRequest();
         testSkillRequest.setSkillName("Java Programming");
-        testSkillRequest.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         testSkill = Skill.builder()
                 .id(1L)
                 .name("Java Programming")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         testSkillResponse = SkillResponse.builder()
                 .skillName("Java Programming")
-                .skillCategory(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
     }
 
@@ -61,7 +58,6 @@ class SkillServiceTest {
         Skill persistedSkill = Skill.builder()
                 .id(10L)
                 .name("Java Programming")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         when(skillMapper.toSkill(testSkillRequest)).thenReturn(testSkill);
@@ -81,12 +77,10 @@ class SkillServiceTest {
         Skill anotherSkill = Skill.builder()
                 .id(2L)
                 .name("React")
-                .category(SkillCategory.FRONTEND_DEVELOPMENT)
                 .build();
 
         SkillResponse anotherResponse = SkillResponse.builder()
                 .skillName("React")
-                .skillCategory(SkillCategory.FRONTEND_DEVELOPMENT)
                 .build();
 
         when(skillRepository.findAll()).thenReturn(List.of(testSkill, anotherSkill));
@@ -101,21 +95,6 @@ class SkillServiceTest {
         verify(skillRepository).findAll();
         verify(skillMapper).toSkillResponse(testSkill);
         verify(skillMapper).toSkillResponse(anotherSkill);
-    }
-
-    @Test
-    @DisplayName("getSkillsByCategory should filter by repository method")
-    void shouldReturnSkillsByCategory() {
-        when(skillRepository.findSkillsByCategory(SkillCategory.BACKEND_DEVELOPMENT))
-                .thenReturn(List.of(testSkill));
-        when(skillMapper.toSkillResponse(testSkill)).thenReturn(testSkillResponse);
-
-        List<SkillResponse> result = skillService.getSkillsByCategory(SkillCategory.BACKEND_DEVELOPMENT);
-
-        assertEquals(1, result.size());
-        assertEquals(testSkillResponse, result.get(0));
-        verify(skillRepository).findSkillsByCategory(SkillCategory.BACKEND_DEVELOPMENT);
-        verify(skillMapper).toSkillResponse(testSkill);
     }
 
     @Test
@@ -139,19 +118,16 @@ class SkillServiceTest {
         Skill existingSkill = Skill.builder()
                 .id(5L)
                 .name("Old Name")
-                .category(SkillCategory.UI_UX_DESIGN)
                 .build();
 
         SkillRequest updateRequest = new SkillRequest();
         updateRequest.setSkillName("Updated Name");
-        updateRequest.setSkillCategory(SkillCategory.FRONTEND_DEVELOPMENT);
 
         when(skillRepository.findById(5L)).thenReturn(Optional.of(existingSkill));
 
         skillService.updateSkill(5L, updateRequest);
 
         assertEquals("Updated Name", existingSkill.getName());
-        assertEquals(SkillCategory.FRONTEND_DEVELOPMENT, existingSkill.getCategory());
         verify(skillRepository).findById(5L);
         verify(skillRepository).save(existingSkill);
     }
