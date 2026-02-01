@@ -177,6 +177,11 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-storage-blob</artifactId>
+			<version>12.33.1</version>
+		</dependency>
     </dependencies>
 
 	<build>
