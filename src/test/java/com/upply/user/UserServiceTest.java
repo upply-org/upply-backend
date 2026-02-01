@@ -114,18 +114,15 @@ class UserServiceTest {
         testSkill = Skill.builder()
                 .id(1L)
                 .name("Java Programming")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         testSkillResponse = SkillResponse.builder()
                 .skillId(1L)
                 .skillName("Java Programming")
-                .skillCategory(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         testSkillRequest = new SkillRequest();
         testSkillRequest.setSkillName("Python");
-        testSkillRequest.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         Date startDate = new Date(System.currentTimeMillis() - 365L * 24 * 60 * 60 * 1000); // 1 year ago
         Date endDate = new Date();
@@ -338,7 +335,6 @@ class UserServiceTest {
         Skill newSkill = Skill.builder()
                 .id(2L)
                 .name("Python")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
@@ -382,12 +378,10 @@ class UserServiceTest {
     void shouldNormalizeSkillNameWithSpacesAndMixedCase() {
         SkillRequest skillRequestWithSpaces = new SkillRequest();
         skillRequestWithSpaces.setSkillName("Java Programming");
-        skillRequestWithSpaces.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         Skill javaSkill = Skill.builder()
                 .id(3L)
                 .name("Java Programming")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
@@ -406,7 +400,6 @@ class UserServiceTest {
     void shouldHandleNullSkillName() {
         SkillRequest skillRequestWithNull = new SkillRequest();
         skillRequestWithNull.setSkillName(null);
-        skillRequestWithNull.setSkillCategory(SkillCategory.BACKEND_DEVELOPMENT);
 
         when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
         // Normalized: null -> null
@@ -480,13 +473,11 @@ class UserServiceTest {
         Skill anotherSkill = Skill.builder()
                 .id(2L)
                 .name("React")
-                .category(SkillCategory.FRONTEND_DEVELOPMENT)
                 .build();
 
         SkillResponse anotherSkillResponse = SkillResponse.builder()
                 .skillId(2L)
                 .skillName("React")
-                .skillCategory(SkillCategory.FRONTEND_DEVELOPMENT)
                 .build();
 
         testUser.getUserSkills().add(testSkill);

@@ -38,21 +38,6 @@ public class SkillController {
         return ResponseEntity.ok(skillService.getAllSkills());
     }
 
-    @GetMapping("/category")
-    @Operation(
-            summary = "Get skills by category",
-            description = "Retrieves all skills that belong to a specific category."
-    )
-    public ResponseEntity<List<SkillResponse>> getSkillsByCategory(
-            @Parameter(
-                    description = "The category to filter skills by",
-                    required = true,
-                    example = "BACKEND_DEVELOPMENT"
-            )
-            @Valid @RequestParam SkillCategory category) {
-        return ResponseEntity.ok(skillService.getSkillsByCategory(category));
-    }
-
     @GetMapping("/name")
     @Operation(
             summary = "Get skill by name",

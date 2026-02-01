@@ -26,9 +26,6 @@ public class Skill {
     @Column(unique = true)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    private SkillCategory category;
-
     private String searchName; // to normalize name column
 
 

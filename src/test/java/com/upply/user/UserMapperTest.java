@@ -7,7 +7,6 @@ import com.upply.profile.project.Project;
 import com.upply.profile.project.dto.ProjectMapper;
 import com.upply.profile.project.dto.ProjectResponse;
 import com.upply.profile.skill.Skill;
-import com.upply.profile.skill.SkillCategory;
 import com.upply.profile.skill.dto.SkillMapper;
 import com.upply.profile.skill.dto.SkillResponse;
 import com.upply.profile.socialLink.SocialLink;
@@ -71,25 +70,21 @@ class UserMapperTest {
         testSkill1 = Skill.builder()
                 .id(1L)
                 .name("Java Programming")
-                .category(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         testSkill2 = Skill.builder()
                 .id(2L)
                 .name("React")
-                .category(SkillCategory.FRONTEND_DEVELOPMENT)
                 .build();
 
         testSkillResponse1 = SkillResponse.builder()
                 .skillId(1L)
                 .skillName("Java Programming")
-                .skillCategory(SkillCategory.BACKEND_DEVELOPMENT)
                 .build();
 
         testSkillResponse2 = SkillResponse.builder()
                 .skillId(2L)
                 .skillName("React")
-                .skillCategory(SkillCategory.FRONTEND_DEVELOPMENT)
                 .build();
 
         Date startDate1 = new Date(System.currentTimeMillis() - 365L * 24 * 60 * 60 * 1000); // 1 year ago

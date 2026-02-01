@@ -1,7 +1,7 @@
 package com.upply.job;
 
-import com.upply.profile.skill.Skill;
 import com.upply.user.User;
+import com.upply.user.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ public class JobMatchingService {
 
     private final VectorStore vectorStore;
     private final JobRepository jobRepository;
+    private final UserRepository userRepository;
 
 
 
@@ -32,9 +33,9 @@ public class JobMatchingService {
 
         content.append("Job Title: ").append(job.getTitle()).append(". ");
 
-        String skillNames = job.getSkills().stream()
-                .map(Skill::getName)
-                .collect(Collectors.joining(", "));
+        List<String> skillList = jobRepository.findJobSkillNames(job.getId());
+
+        String skillNames = String.join(", ", skillList);
 
         content.append("Required Skills: ").append(skillNames).append(".");
 
@@ -44,9 +45,9 @@ public class JobMatchingService {
 
         StringBuilder profile = new StringBuilder();
 
-        String skillNames = user.getUserSkills().stream()
-                .map(Skill::getName)
-                .collect(Collectors.joining(", "));
+        List<String> skillList = userRepository.findUserSkillNames(user.getId());
+
+        String skillNames = String.join(", ", skillList);
 
         profile.append("User Skills: ").append(skillNames).append(".");
 
@@ -108,19 +109,20 @@ public class JobMatchingService {
 
         try {
             String userProfile = buildUserProfile(user);
+            // log.info(userProfile);
 
             SearchRequest searchRequest = SearchRequest.builder()
                     .query(userProfile) // The text to search for
                     .topK(topK) // Number of results
-                    .filterExpression("status == 'OPEN'")
-                    .similarityThreshold(0.5) // Minimum similarity score (0.0 to 1.0)
+                    // .filterExpression("status == 'OPEN'")
+                    .similarityThreshold(0.85) // Minimum similarity score (0.0 to 1.0)
                     .build();
 
             List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
 
             // Get job IDs from Redis (already in similarity order)
             List<Long> jobIds = similarDocuments.stream()
-                    .map(doc -> Long.valueOf(doc.getMetadata().get("jobId").toString()))
+                    .map(doc -> Long.valueOf(doc.getId()))
                     .toList();
 
 
@@ -132,7 +134,7 @@ public class JobMatchingService {
 
             Map<Long, Double> scoreMap = similarDocuments.stream()
                     .collect(Collectors.toMap(
-                            doc -> Long.valueOf(doc.getMetadata().get("jobId").toString()),
+                            doc -> Long.valueOf(doc.getId()),
                             doc -> doc.getScore() == null ? 0.0 : doc.getScore()
                     ));
 

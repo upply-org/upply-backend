@@ -83,7 +83,6 @@ public class UserService {
                 .orElseGet(() -> {
                     Skill newSkill = new Skill();
                     newSkill.setName(skillRequest.getSkillName());
-                    newSkill.setCategory(skillRequest.getSkillCategory());
                     return skillRepository.save(newSkill);
                 });
         user.getUserSkills().add(skill);
