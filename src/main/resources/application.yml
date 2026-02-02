@@ -39,19 +39,25 @@ spring:
     virtual:
       enabled: true
   ai:
-    google:
-      genai:
-        embedding:
-          api-key: ${GEMINI_API}
-          text:
-            options:
-              model: text-embedding-004
-              task-type: semantic_similarity
+    model:
+      embedding: transformers
+    embedding:
+      transformer:
+        cache:
+          enabled: true
+          directory: /tmp/spring-ai-onnx-model
+        tokenizer:
+          uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer.json
+        onnx:
+          model-uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/model.onnx
+
     vectorstore:
       redis:
         initialize-schema: true
         index-name: upply-vector-index
-        prefix: upply:embedding
+        prefix: "upply:embedding:"
+        dimension: 384
+
   data:
     redis:
       host: ${REDIS_HOST}
