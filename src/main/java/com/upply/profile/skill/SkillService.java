@@ -3,7 +3,7 @@ package com.upply.profile.skill;
 import com.upply.profile.skill.dto.SkillMapper;
 import com.upply.profile.skill.dto.SkillRequest;
 import com.upply.profile.skill.dto.SkillResponse;
-import jakarta.persistence.EntityNotFoundException;
+import com.upply.exception.custom.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,13 +31,13 @@ public class SkillService {
         String normalizedName =
                 ((name == null) ? null : name.toLowerCase().replaceAll("\\s+", ""));
         Skill skill =  skillRepository.findSkillByName(normalizedName)
-                .orElseThrow(() -> new EntityNotFoundException("No Skill found with this name"));
+                .orElseThrow(() -> new ResourceNotFoundException("No Skill found with this name"));
         return skillMapper.toSkillResponse(skill);
     }
 
     public void updateSkill(Long skillId, SkillRequest skillRequest) {
         Skill skill = skillRepository.findById(skillId)
-                .orElseThrow(() -> new IllegalArgumentException("There is no skill with this skill ID"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no skill with this skill ID"));
 
         skill.setName(skillRequest.getSkillName());
 

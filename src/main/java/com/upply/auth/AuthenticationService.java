@@ -4,6 +4,8 @@ import com.upply.auth.dto.LoginRequest;
 import com.upply.auth.dto.LoginResponse;
 import com.upply.auth.dto.RegisterRequest;
 import com.upply.email.EmailService;
+import com.upply.exception.custom.BusinessLogicException;
+import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.email.EmailTemplate;
 import com.upply.security.JwtService;
 import com.upply.token.ActivationToken;
@@ -26,7 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -42,8 +43,6 @@ public class AuthenticationService {
 
     @Value("${app.activation-base-url}")
     private String activationBaseUrl;
-
-
 
     private String generateActivationToken() {
 
@@ -92,24 +91,20 @@ public class AuthenticationService {
                 user.getEmail(),
                 "Activate Your Account",
                 EmailTemplate.Activation,
-                vars
-        );
+                vars);
     }
-
-
-
 
     public void register(@Valid RegisterRequest request) {
 
         String email = request.getEmail();
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
-        if(optionalUser.isPresent()) {
+        if (optionalUser.isPresent()) {
 
             User existingUser = optionalUser.get();
 
-            if(existingUser.isAccountActivated()) {
-                throw new IllegalArgumentException("Email is already registered");
+            if (existingUser.isAccountActivated()) {
+                throw new BusinessLogicException("Email is already registered");
             }
 
             existingUser.setFirstName(request.getFirstName());
@@ -140,19 +135,19 @@ public class AuthenticationService {
     public void activate(String activationToken) {
 
         ActivationToken token = activationTokenRepository.findByToken(activationToken)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid activation Token"));
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid activation Token"));
 
         User user = token.getUser();
-        if(user.isAccountActivated()) {
-            throw new IllegalArgumentException("Account is already activated");
+        if (user.isAccountActivated()) {
+            throw new BusinessLogicException("Account is already activated");
         }
 
-        if(token.isUsed()) {
-            throw new IllegalArgumentException("Activation token is already used");
+        if (token.isUsed()) {
+            throw new BusinessLogicException("Activation token is already used");
         }
 
-        if(token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Activation Token is expired");
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BusinessLogicException("Activation Token is expired");
         }
 
         user.setAccountActivated(true);
@@ -164,16 +159,17 @@ public class AuthenticationService {
 
     public LoginResponse login(@Valid LoginRequest request) {
 
-        var auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        var auth = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         var user = ((User) auth.getPrincipal());
 
-        if(!user.isAccountActivated()) {
-            throw new IllegalArgumentException("Account is not activated");
+        if (!user.isAccountActivated()) {
+            throw new BusinessLogicException("Account is not activated");
         }
 
-        if(user.isAccountLocked()) {
-            throw new IllegalArgumentException("Account is locked");
+        if (user.isAccountLocked()) {
+            throw new BusinessLogicException("Account is locked");
         }
 
         var claims = new HashMap<String, Object>();

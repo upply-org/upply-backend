@@ -19,7 +19,7 @@ import com.upply.profile.socialLink.dto.SocialLinkResponse;
 import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
-import jakarta.persistence.EntityNotFoundException;
+import com.upply.exception.custom.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -220,12 +220,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getUser should throw EntityNotFoundException when user does not exist")
+    @DisplayName("getUser should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInGetUser() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.getUser()
         );
 
@@ -250,12 +250,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUser should throw EntityNotFoundException when user does not exist")
+    @DisplayName("updateUser should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInUpdateUser() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.updateUser(testUserRequest)
         );
 
@@ -280,12 +280,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addSkillToUser should throw EntityNotFoundException when user does not exist")
+    @DisplayName("addSkillToUser should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInAddSkillToUser() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.addSkillToUser(1L)
         );
 
@@ -296,13 +296,13 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addSkillToUser should throw IllegalArgumentException when skill does not exist")
+    @DisplayName("addSkillToUser should throw ResourceNotFoundException when skill does not exist")
     void shouldThrowExceptionWhenSkillNotFoundInAddSkillToUser() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
         when(skillRepository.findById(999L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.addSkillToUser(999L)
         );
 
@@ -357,12 +357,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addSkillByName should throw EntityNotFoundException when user does not exist")
+    @DisplayName("addSkillByName should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInAddSkillByName() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.addSkillByName(testSkillRequest)
         );
 
@@ -435,12 +435,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("removeSkillFromUser should throw EntityNotFoundException when user does not exist")
+    @DisplayName("removeSkillFromUser should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInRemoveSkillFromUser() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.removeSkillFromUser(1L)
         );
 
@@ -451,13 +451,13 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("removeSkillFromUser should throw IllegalArgumentException when skill does not exist")
+    @DisplayName("removeSkillFromUser should throw ResourceNotFoundException when skill does not exist")
     void shouldThrowExceptionWhenSkillNotFoundInRemoveSkillFromUser() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
         when(skillRepository.findById(999L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.removeSkillFromUser(999L)
         );
 
@@ -512,12 +512,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getUserSkills should throw EntityNotFoundException when user does not exist")
+    @DisplayName("getUserSkills should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInGetUserSkills() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.getUserSkills()
         );
 
@@ -625,12 +625,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addUserExperience should throw EntityNotFoundException when user does not exist")
+    @DisplayName("addUserExperience should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInAddUserExperience() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.addUserExperience(testExperienceRequest)
         );
 
@@ -669,12 +669,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUserExperience should throw EntityNotFoundException when experience does not exist")
+    @DisplayName("updateUserExperience should throw ResourceNotFoundException when experience does not exist")
     void shouldThrowExceptionWhenExperienceNotFoundInUpdateUserExperience() {
         when(experienceRepository.findExperienceById(999L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.updateUserExperience(999L, testExperienceRequest)
         );
 
@@ -751,12 +751,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getUserProjectById should throw EntityNotFoundException when project does not exist")
+    @DisplayName("getUserProjectById should throw ResourceNotFoundException when project does not exist")
     void shouldThrowExceptionWhenProjectNotFoundInGetUserProjectById() {
         when(projectRepository.findProjectById(999L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.getUserProjectById(999L)
         );
 
@@ -795,12 +795,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addUserProject should throw EntityNotFoundException when user does not exist")
+    @DisplayName("addUserProject should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInAddUserProject() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.addUserProject(testProjectRequest)
         );
 
@@ -841,12 +841,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUserProject should throw EntityNotFoundException when project does not exist")
+    @DisplayName("updateUserProject should throw ResourceNotFoundException when project does not exist")
     void shouldThrowExceptionWhenProjectNotFoundInUpdateUserProject() {
         when(projectRepository.findProjectById(999L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.updateUserProject(999L, testProjectRequest)
         );
 
@@ -924,12 +924,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("getUserSocialLinkById should throw EntityNotFoundException when social link does not exist")
+    @DisplayName("getUserSocialLinkById should throw ResourceNotFoundException when social link does not exist")
     void shouldThrowExceptionWhenSocialLinkNotFoundInGetUserSocialLinkById() {
         when(socialLinkRepository.findSocialLinkById(999L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.getUserSocialLinkById(999L)
         );
 
@@ -964,12 +964,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("addUserSocialLinks should throw EntityNotFoundException when user does not exist")
+    @DisplayName("addUserSocialLinks should throw ResourceNotFoundException when user does not exist")
     void shouldThrowExceptionWhenUserNotFoundInAddUserSocialLinks() {
         when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.addUserSocialLinks(testSocialLinkRequest)
         );
 
@@ -999,12 +999,12 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("updateUserSocialLinks should throw EntityNotFoundException when social link does not exist")
+    @DisplayName("updateUserSocialLinks should throw ResourceNotFoundException when social link does not exist")
     void shouldThrowExceptionWhenSocialLinkNotFoundInUpdateUserSocialLinks() {
         when(socialLinkRepository.findSocialLinkById(999L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> userService.updateUserSocialLinks(999L, testSocialLinkRequest)
         );
 

@@ -4,6 +4,7 @@ import com.upply.profile.skill.*;
 import com.upply.profile.skill.dto.SkillMapper;
 import com.upply.profile.skill.dto.SkillRequest;
 import com.upply.profile.skill.dto.SkillResponse;
+import com.upply.exception.custom.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -137,8 +138,8 @@ class SkillServiceTest {
     void shouldThrowWhenSkillNotFoundDuringUpdate() {
         when(skillRepository.findById(42L)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> skillService.updateSkill(42L, testSkillRequest)
         );
 
