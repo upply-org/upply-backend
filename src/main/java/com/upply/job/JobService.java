@@ -6,7 +6,9 @@ import com.upply.application.dto.ApplicationMapper;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
 import com.upply.common.PageResponse;
-import com.upply.exception.OperationNotPermittedException;
+import com.upply.exception.custom.BusinessLogicException;
+import com.upply.exception.custom.OperationNotPermittedException;
+import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.job.dto.*;
 import com.upply.job.enums.JobModel;
 import com.upply.job.enums.JobSeniority;
@@ -42,11 +44,10 @@ public class JobService {
     public JobResponse createJob(@Valid JobRequest request, Authentication connectedUser) {
 
         Set<Skill> skills = new HashSet<>(
-                skillRepository.findAllById(request.getSkillIds())
-        );
+                skillRepository.findAllById(request.getSkillIds()));
 
         if (skills.size() != request.getSkillIds().size()) {
-            throw new IllegalArgumentException("One or more skills do not exist");
+            throw new ResourceNotFoundException("One or more skills do not exist");
         }
 
         Job job = jobMapper.toJob(request, skills);
@@ -62,11 +63,10 @@ public class JobService {
         return jobMapper.toJobResponse(savedJob);
     }
 
-
     public JobResponse getJob(Long id) {
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + id + " not found"));
 
         return jobMapper.toJobResponse(job);
     }
@@ -75,14 +75,11 @@ public class JobService {
 
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("createdDate").descending());
 
-
         Page<Job> jobs = jobRepository.findByStatus(JobStatus.OPEN, pageable);
-
 
         List<JobListResponse> jobResponses = jobs.stream()
                 .map(jobMapper::toJobListResponse)
                 .toList();
-
 
         return new PageResponse<>(
                 jobResponses,
@@ -91,8 +88,7 @@ public class JobService {
                 jobs.getTotalElements(),
                 jobs.getTotalPages(),
                 jobs.isFirst(),
-                jobs.isLast()
-        );
+                jobs.isLast());
     }
 
     public List<MatchedJobListResponse> getMatchedJobs(Authentication connectedUser) {
@@ -104,24 +100,21 @@ public class JobService {
         return matchedJobsWithScores.stream()
                 .map(jobWithScore -> jobMapper.toMatchedJobListResponse(
                         jobWithScore.getJob(),
-                        jobWithScore.getScore()
-                ))
+                        jobWithScore.getScore()))
                 .toList();
     }
-
 
     @Transactional
     public JobResponse updateJob(Long id, JobUpdateRequest request, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + id + " not found"));
 
         User user = ((User) connectedUser.getPrincipal());
 
         if (!Objects.equals(job.getPostedBy().getId(), user.getId())) {
             throw new OperationNotPermittedException("You are not permitted to update this job");
         }
-
 
         if (request.getTitle() != null) {
             job.setTitle(request.getTitle());
@@ -150,7 +143,7 @@ public class JobService {
         if (request.getSkillIds() != null) {
             Set<Skill> skills = new HashSet<>(skillRepository.findAllById(request.getSkillIds()));
             if (skills.size() != request.getSkillIds().size()) {
-                throw new IllegalArgumentException("One or more skills do not exist");
+                throw new ResourceNotFoundException("One or more skills do not exist");
             }
             job.setSkills(skills);
         }
@@ -167,7 +160,7 @@ public class JobService {
     public JobResponse closeJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + id + " not found"));
 
         User user = ((User) connectedUser.getPrincipal());
 
@@ -176,7 +169,7 @@ public class JobService {
         }
 
         if (job.getStatus() == JobStatus.CLOSED) {
-            throw new IllegalArgumentException("Job with ID " + id + " is already closed");
+            throw new BusinessLogicException("Job with ID " + id + " is already closed");
         }
 
         job.setStatus(JobStatus.CLOSED);
@@ -193,7 +186,7 @@ public class JobService {
     public JobResponse pauseJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + id + " not found"));
 
         User user = ((User) connectedUser.getPrincipal());
 
@@ -202,11 +195,11 @@ public class JobService {
         }
 
         if (job.getStatus() == JobStatus.CLOSED) {
-            throw new IllegalArgumentException("Job with ID " + id + " is closed and cannot be paused");
+            throw new BusinessLogicException("Job with ID " + id + " is closed and cannot be paused");
         }
 
         if (job.getStatus() == JobStatus.PAUSED) {
-            throw new IllegalArgumentException("Job with ID " + id + " is already paused");
+            throw new BusinessLogicException("Job with ID " + id + " is already paused");
         }
 
         job.setStatus(JobStatus.PAUSED);
@@ -223,7 +216,7 @@ public class JobService {
     public JobResponse resumeJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Job with ID " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + id + " not found"));
 
         User user = ((User) connectedUser.getPrincipal());
 
@@ -232,11 +225,11 @@ public class JobService {
         }
 
         if (job.getStatus() == JobStatus.CLOSED) {
-            throw new IllegalArgumentException("Job with ID " + id + " is closed and cannot be resumed");
+            throw new BusinessLogicException("Job with ID " + id + " is closed and cannot be resumed");
         }
 
         if (job.getStatus() == JobStatus.OPEN) {
-            throw new IllegalArgumentException("Job with ID " + id + " is already OPEN");
+            throw new BusinessLogicException("Job with ID " + id + " is already OPEN");
         }
 
         job.setStatus(JobStatus.OPEN);
@@ -250,11 +243,10 @@ public class JobService {
     }
 
     public PageResponse<ApplicationResponse> getJobApplications(
-            Long jobId, int pageNumber, int size
-    ) {
+            Long jobId, int pageNumber, int size) {
         Pageable pageable = (Pageable) PageRequest.of(pageNumber, size, Sort.by("lastUpdate").descending());
 
-        Page<Application> applications = applicationRepository.getJobApplications(jobId ,pageable);
+        Page<Application> applications = applicationRepository.getJobApplications(jobId, pageable);
 
         List<ApplicationResponse> applicationResponses = applications.stream()
                 .map(applicationMapper::toApplicationResponse)
@@ -267,13 +259,11 @@ public class JobService {
                 applications.getTotalElements(),
                 applications.getTotalPages(),
                 applications.isFirst(),
-                applications.isLast()
-        );
+                applications.isLast());
     }
 
     public PageResponse<ApplicationResponse> getJobApplicationsByStatus(
-            Long jobId ,ApplicationStatus status ,int pageNumber, int size
-    ) {
+            Long jobId, ApplicationStatus status, int pageNumber, int size) {
         Pageable pageable = (Pageable) PageRequest.of(pageNumber, size, Sort.by("lastUpdate").descending());
 
         Page<Application> applications = applicationRepository.getApplicationByStatus(jobId, status, pageable);
@@ -289,8 +279,7 @@ public class JobService {
                 applications.getTotalElements(),
                 applications.getTotalPages(),
                 applications.isFirst(),
-                applications.isLast()
-        );
+                applications.isLast());
     }
 
 }

@@ -19,7 +19,7 @@ import com.upply.profile.socialLink.dto.SocialLinkResponse;
 import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
-import jakarta.persistence.EntityNotFoundException;
+import com.upply.exception.custom.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,12 +45,12 @@ public class UserService {
     public UserResponse getUser() {
         return userRepository.getCurrentUser()
                 .map(userMapper::toUserResponse)
-                .orElseThrow(() -> new EntityNotFoundException());
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
     }
 
     public void updateUser(UserRequest userRequest) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
         user.setFirstName(userRequest.firstName());
         user.setLastName(userRequest.lastName());
@@ -63,10 +63,10 @@ public class UserService {
     @Transactional
     public void addSkillToUser(Long skillId) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
 
         Skill skill = skillRepository.findById(skillId)
-                .orElseThrow(() -> new IllegalArgumentException("Skill Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Skill Not found"));
 
         user.getUserSkills().add(skill);
         userRepository.save(user);
@@ -75,7 +75,7 @@ public class UserService {
     @Transactional
     public void addSkillByName(SkillRequest skillRequest) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
 
         String normalizedName =
                 ((skillRequest.getSkillName() == null) ? null : skillRequest.getSkillName().toLowerCase().replaceAll("\\s+", ""));
@@ -92,10 +92,10 @@ public class UserService {
     @Transactional
     public void removeSkillFromUser(Long skillId) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
 
         Skill skill = skillRepository.findById(skillId)
-                .orElseThrow(() -> new IllegalArgumentException("Skill Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Skill Not found"));
 
         user.getUserSkills().remove(skill);
         userRepository.save(user);
@@ -104,7 +104,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public Set<SkillResponse> getUserSkills() {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
 
         return user.getUserSkills().stream()
                 .map(skillMapper::toSkillResponse)
@@ -122,13 +122,13 @@ public class UserService {
 
     public ExperienceResponse getUserExperienceById(Long experienceId){
         Experience experience = experienceRepository.findExperienceById(experienceId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no experience with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no experience with this id"));
         return experienceMapper.toExperienceResponse(experience);
     }
 
     public Long addUserExperience(ExperienceRequest experienceRequest) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
         Experience experience = experienceMapper.toExperience(experienceRequest);
         experience.setUser(user);
         return experienceRepository.save(experience).getId();
@@ -136,7 +136,7 @@ public class UserService {
 
     public void updateUserExperience(Long experienceId, ExperienceRequest experienceRequest) {
         Experience experience = experienceRepository.findExperienceById(experienceId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no experience with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no experience with this id"));
 
         experience.setTitle(experienceRequest.title());
         experience.setOrganization(experienceRequest.organization());
@@ -162,14 +162,14 @@ public class UserService {
 
     public ProjectResponse getUserProjectById(Long projectId){
         Project project = projectRepository.findProjectById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no project with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no project with this id"));
 
         return projectMapper.toProjectResponse(project);
     }
 
     public Long addUserProject(ProjectRequest projectRequest) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
         Project project = projectMapper.toProject(projectRequest);
         project.setUser(user);
         return projectRepository.save(project).getId();
@@ -177,7 +177,7 @@ public class UserService {
 
     public void updateUserProject(Long projectId, ProjectRequest projectRequest) {
         Project project = projectRepository.findProjectById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no project with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no project with this id"));
 
         project.setTitle(projectRequest.title());
         project.setDescription(projectRequest.description());
@@ -204,13 +204,13 @@ public class UserService {
 
     public SocialLinkResponse getUserSocialLinkById(Long socialId){
         SocialLink socialLink = socialLinkRepository.findSocialLinkById(socialId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no social links with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no social links with this id"));
         return socialLinkMapper.toSocialLinkResponse(socialLink);
     }
 
     public Long addUserSocialLinks(SocialLinkRequest socialLinkRequest) {
         User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new EntityNotFoundException("User Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
         SocialLink socialLink = socialLinkMapper.toSocialLink(socialLinkRequest);
         socialLink.setUser(user);
@@ -220,7 +220,7 @@ public class UserService {
 
     public void updateUserSocialLinks(Long socialId, SocialLinkRequest socialLinkRequest) {
         SocialLink socialLink = socialLinkRepository.findSocialLinkById(socialId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no social links with this id"));
+                .orElseThrow(() -> new ResourceNotFoundException("There is no social links with this id"));
 
         socialLink.setUrl(socialLinkRequest.url());
         socialLink.setSocialType(socialLinkRequest.socialType());
