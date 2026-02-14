@@ -8,6 +8,11 @@ import com.upply.profile.project.*;
 import com.upply.profile.project.dto.ProjectMapper;
 import com.upply.profile.project.dto.ProjectRequest;
 import com.upply.profile.project.dto.ProjectResponse;
+import com.upply.profile.resume.AzureStorageService;
+import com.upply.profile.resume.Resume;
+import com.upply.profile.resume.ResumeRepository;
+import com.upply.profile.resume.dto.ResumeMapper;
+import com.upply.profile.resume.dto.ResumeResponse;
 import com.upply.profile.skill.*;
 import com.upply.profile.skill.dto.SkillMapper;
 import com.upply.profile.skill.dto.SkillRequest;
@@ -20,10 +25,13 @@ import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
 import com.upply.exception.custom.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,6 +49,9 @@ public class UserService {
     private final ExperienceMapper experienceMapper;
     private final ProjectMapper projectMapper;
     private final SocialLinkMapper socialLinkMapper;
+    private final AzureStorageService azureStorageService;
+    private final ResumeRepository resumeRepository;
+    private final ResumeMapper resumeMapper;
 
     public UserResponse getUser() {
         return userRepository.getCurrentUser()
@@ -230,6 +241,84 @@ public class UserService {
 
     public void deleteUserLinks(long socialId){
         socialLinkRepository.deleteSocialLinkById(socialId);
+    }
+
+    //resume
+
+    @Transactional
+    public ResumeResponse addUserResume(MultipartFile resumeFile) throws IOException {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        validateFile(resumeFile);
+       String blobName = azureStorageService.uploadFile(user.getId(), resumeFile.getBytes());
+       String fileName = resumeFile.getOriginalFilename();
+
+       Resume resume = new Resume();
+
+       resume.setBlobName(blobName);
+       resume.setFileName(fileName);
+       resume.setUser(user);
+
+       resumeRepository.save(resume);
+       return resumeMapper.toResumeResponse(resume);
+    }
+
+    public byte[] getResumeFileById(Long resumeId){
+        Resume resume = resumeRepository.getResumeById(resumeId)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no resume with this id"));
+        return azureStorageService.downloadFile(resume.getBlobName());
+    }
+
+    public List<ResumeResponse> getAllUserResumes(){
+        return resumeRepository.getAllUserResumes()
+                .stream()
+                .map(resumeMapper::toResumeResponse)
+                .toList();
+    }
+
+    public ResumeResponse getLastSubmittedResume(){
+        Resume resume = resumeRepository.getLastSubmittedResume()
+                .orElseThrow(()-> new ResourceNotFoundException("Failed to get last submitted resume"));
+        return resumeMapper.toResumeResponse(resume);
+    }
+
+    public void deleteUserResume(Long resumeId){
+        Resume resume = resumeRepository.getResumeById(resumeId)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no resume with this id"));
+
+        if(Boolean.TRUE.equals(resume.getIsDeleted())){
+            throw new IllegalStateException("Resume is already deleted");
+        }
+
+        resume.setIsDeleted(true);
+        resumeRepository.save(resume);
+    }
+    public String getFileName(Long resumeId){
+        Resume resume = resumeRepository.getResumeById(resumeId)
+                .orElseThrow(() -> new ResourceNotFoundException("There is no resume with this id"));
+        return resume.getFileName();
+    }
+
+    private void validateFile(MultipartFile file) {
+        long MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+        if (file == null ||file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
+            throw new IllegalArgumentException("Only PDF files are allowed");
+        }
+
+        if (!"application/pdf".equals(file.getContentType())) {
+            throw new IllegalArgumentException("Only PDF files are allowed");
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File size exceeds the 5MB limit");
+        }
     }
 
 }
