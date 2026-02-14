@@ -4,6 +4,7 @@ import com.upply.profile.experience.dto.ExperienceRequest;
 import com.upply.profile.experience.dto.ExperienceResponse;
 import com.upply.profile.project.dto.ProjectRequest;
 import com.upply.profile.project.dto.ProjectResponse;
+import com.upply.profile.resume.dto.ResumeResponse;
 import com.upply.profile.skill.dto.SkillRequest;
 import com.upply.profile.skill.dto.SkillResponse;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
@@ -15,10 +16,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -305,4 +307,56 @@ public class UserController {
         userService.deleteUserLinks(socialId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    //resume
+    @PostMapping(value = "/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResumeResponse> addUserResume(@RequestParam("file")MultipartFile resume) throws IOException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUserResume(resume));
+    }
+
+    @GetMapping( "/resume")
+    public ResponseEntity<List<ResumeResponse>> getAllUserResumes(){
+        return ResponseEntity.ok(userService.getAllUserResumes());
+
+    }
+
+    @GetMapping("/resume/last")
+    public ResponseEntity<ResumeResponse> getLastSubmittedResume(){
+        return ResponseEntity.ok(userService.getLastSubmittedResume());
+    }
+
+    @GetMapping("/resume/view/{resumeId}")
+    public ResponseEntity<byte[]> viewUserResume(@PathVariable Long resumeId){
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.builder("inline")
+                        .build()
+        );
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(userService.getResumeFileById(resumeId));
+    }
+
+    @GetMapping("/resume/download/{resumeId}")
+    public ResponseEntity<byte[]> downloadUSerResume(@PathVariable Long resumeId){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                        .filename(userService.getFileName(resumeId))
+                        .build()
+        );
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(userService.getResumeFileById(resumeId));
+    }
+
+    @DeleteMapping("/resume/{resumeId}")
+    public ResponseEntity<Void> deleteUserResume(@PathVariable Long resumeId) {
+        userService.deleteUserResume(resumeId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

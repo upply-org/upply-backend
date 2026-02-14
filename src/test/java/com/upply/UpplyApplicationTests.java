@@ -1,5 +1,6 @@
 package com.upply;
 
+import com.upply.profile.resume.AzureStorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +13,8 @@ class UpplyApplicationTests {
 
 	@MockitoBean
 	private VectorStore vectorStore;
-
+	@MockitoBean
+	private AzureStorageService azureStorageService;
 	@Test
 	void contextLoads() {
 	}
