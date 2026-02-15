@@ -39,6 +39,14 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+
+			<dependency>
+				<groupId>com.azure.spring</groupId>
+				<artifactId>spring-cloud-azure-dependencies</artifactId>
+				<version>6.1.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -182,7 +190,13 @@
 			<artifactId>azure-storage-blob</artifactId>
 			<version>12.33.1</version>
 		</dependency>
-    </dependencies>
+
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-starter-monitor</artifactId>
+		</dependency>
+
+	</dependencies>
 
 	<build>
 		<plugins>
