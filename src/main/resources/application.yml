@@ -69,6 +69,11 @@ spring:
     multipart:
       enabled: true
       max-file-size: 5MB
+  cloud:
+    azure:
+      monitor:
+        instrumentation:
+          connection-string: ${OBSERVE}
 server:
   port: 8080
   servlet:
@@ -92,3 +97,6 @@ azure:
     connection-String: ${AZURE_STORAGE_CONNECTION_STRING}
     container-name: ${AZURE_STORAGE_CONTAINER_NAME}
 
+applicationinsights:
+  connection:
+    string: ${OBSERVE}
