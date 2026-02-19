@@ -2,11 +2,13 @@ package com.upply.application;
 
 import com.upply.application.enums.ApplicationStatus;
 import com.upply.job.Job;
+import com.upply.profile.resume.Resume;
 import com.upply.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -30,6 +32,10 @@ public class Application {
     @JoinColumn(name = "job_id")
     private Job job;
 
+    @ManyToOne
+    @JoinColumn(name = "resume_id")
+    private Resume resume;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime applyTime;
@@ -37,10 +43,6 @@ public class Application {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime lastUpdate;
-
-    @Column(columnDefinition = "TEXT")
-    private String resume; // TO-DO: store resume in storage, worth it.
-
     @Column(length = 5000)
     private String coverLetter;
 

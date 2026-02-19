@@ -1,5 +1,6 @@
 package com.upply.user;
 
+import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.profile.experience.*;
 import com.upply.profile.experience.dto.ExperienceMapper;
 import com.upply.profile.experience.dto.ExperienceRequest;
@@ -131,7 +132,7 @@ public class UserService {
                 .toList();
     }
 
-    public ExperienceResponse getUserExperienceById(Long experienceId){
+    public ExperienceResponse getUserExperienceById(Long experienceId) {
         Experience experience = experienceRepository.findExperienceById(experienceId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no experience with this id"));
         return experienceMapper.toExperienceResponse(experience);
@@ -171,7 +172,7 @@ public class UserService {
                 .toList();
     }
 
-    public ProjectResponse getUserProjectById(Long projectId){
+    public ProjectResponse getUserProjectById(Long projectId) {
         Project project = projectRepository.findProjectById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no project with this id"));
 
@@ -213,7 +214,7 @@ public class UserService {
                 .toList();
     }
 
-    public SocialLinkResponse getUserSocialLinkById(Long socialId){
+    public SocialLinkResponse getUserSocialLinkById(Long socialId) {
         SocialLink socialLink = socialLinkRepository.findSocialLinkById(socialId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no social links with this id"));
         return socialLinkMapper.toSocialLinkResponse(socialLink);
@@ -239,7 +240,7 @@ public class UserService {
         socialLinkRepository.save(socialLink);
     }
 
-    public void deleteUserLinks(long socialId){
+    public void deleteUserLinks(long socialId) {
         socialLinkRepository.deleteSocialLinkById(socialId);
     }
 
@@ -247,54 +248,54 @@ public class UserService {
 
     @Transactional
     public ResumeResponse addUserResume(MultipartFile resumeFile) throws IOException {
+        validateFile(resumeFile);
         User user = userRepository.getCurrentUser()
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+        String blobName = azureStorageService.uploadFile(user.getId(), resumeFile.getBytes());
+        String fileName = resumeFile.getOriginalFilename();
 
-        validateFile(resumeFile);
-       String blobName = azureStorageService.uploadFile(user.getId(), resumeFile.getBytes());
-       String fileName = resumeFile.getOriginalFilename();
+        Resume resume = new Resume();
 
-       Resume resume = new Resume();
+        resume.setBlobName(blobName);
+        resume.setFileName(fileName);
+        resume.setUser(user);
 
-       resume.setBlobName(blobName);
-       resume.setFileName(fileName);
-       resume.setUser(user);
-
-       resumeRepository.save(resume);
-       return resumeMapper.toResumeResponse(resume);
+        resumeRepository.save(resume);
+        return resumeMapper.toResumeResponse(resume);
     }
 
-    public byte[] getResumeFileById(Long resumeId){
+    public byte[] getResumeFileById(Long resumeId) {
         Resume resume = resumeRepository.getResumeById(resumeId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no resume with this id"));
         return azureStorageService.downloadFile(resume.getBlobName());
     }
 
-    public List<ResumeResponse> getAllUserResumes(){
+    public List<ResumeResponse> getAllUserResumes() {
         return resumeRepository.getAllUserResumes()
                 .stream()
                 .map(resumeMapper::toResumeResponse)
                 .toList();
     }
 
-    public ResumeResponse getLastSubmittedResume(){
+    public ResumeResponse getLastSubmittedResume() {
         Resume resume = resumeRepository.getLastSubmittedResume()
-                .orElseThrow(()-> new ResourceNotFoundException("Failed to get last submitted resume"));
+                .orElseThrow(() -> new ResourceNotFoundException("Failed to get last submitted resume"));
         return resumeMapper.toResumeResponse(resume);
     }
 
-    public void deleteUserResume(Long resumeId){
+    public void deleteUserResume(Long resumeId) {
         Resume resume = resumeRepository.getResumeById(resumeId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no resume with this id"));
 
-        if(Boolean.TRUE.equals(resume.getIsDeleted())){
+        if (Boolean.TRUE.equals(resume.getIsDeleted())) {
             throw new IllegalStateException("Resume is already deleted");
         }
 
         resume.setIsDeleted(true);
         resumeRepository.save(resume);
     }
-    public String getFileName(Long resumeId){
+
+    public String getFileName(Long resumeId) {
         Resume resume = resumeRepository.getResumeById(resumeId)
                 .orElseThrow(() -> new ResourceNotFoundException("There is no resume with this id"));
         return resume.getFileName();
@@ -303,21 +304,21 @@ public class UserService {
     private void validateFile(MultipartFile file) {
         long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-        if (file == null ||file.isEmpty()) {
-            throw new IllegalArgumentException("File is empty");
+        if (file == null || file.isEmpty()) {
+            throw new OperationNotPermittedException("File is empty");
         }
 
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".pdf")) {
-            throw new IllegalArgumentException("Only PDF files are allowed");
+            throw new OperationNotPermittedException("Only PDF files are allowed");
         }
 
         if (!"application/pdf".equals(file.getContentType())) {
-            throw new IllegalArgumentException("Only PDF files are allowed");
+            throw new OperationNotPermittedException("Only PDF files are allowed");
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File size exceeds the 5MB limit");
+            throw new OperationNotPermittedException("File size exceeds the 5MB limit");
         }
     }
 
