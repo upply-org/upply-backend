@@ -65,6 +65,10 @@ spring:
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
       # For production, consider adding connection pooling
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
   cloud:
     azure:
       monitor:

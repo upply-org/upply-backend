@@ -24,6 +24,8 @@ public record ApplicationResponse(
 
         String coverLetter,
 
+        Long resumeId,
+
         ApplicationStatus status,
 
         double matchingRatio

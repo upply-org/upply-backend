@@ -13,7 +13,6 @@ public class ApplicationMapper {
     private final SocialLinkMapper socialLinkMapper;
     public Application toApplication(ApplicationRequest applicationRequest){
         return Application.builder()
-                .resume(applicationRequest.resume())
                 .coverLetter(applicationRequest.coverLetter())
                 .build();
     }
@@ -23,7 +22,7 @@ public class ApplicationMapper {
                 .id(application.getId())
                 .applicantFullName(application.getApplicant().getFullName())
                 .applicantEmail(application.getApplicant().getEmail())
-
+                .resumeId(application.getResume().getId())
                 .applicantSocialLinks(application.getApplicant().getSocialLinks() != null ? application.getApplicant().getSocialLinks()
                         .stream()
                         .map(socialLinkMapper::toSocialLinkResponse)

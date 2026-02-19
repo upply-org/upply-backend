@@ -10,15 +10,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Builder
 public record ApplicationRequest(
-
-        @JsonIgnore
-        @Schema(hidden = true)
-        String resume,
-
         @NotNull(message = "Job ID is required")
         @Min(value = 1, message = "Job ID must be greater than 0")
         Long jobId,
-
+        @NotNull(message = "resume ID is required")
+        @Min(value = 1, message = "resume ID is required")
+        Long resumeId,
         @Size(max = 5000, message = "Cover letter must not exceed 5000 characters")
         String coverLetter
 ) {

@@ -21,6 +21,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -98,6 +99,14 @@ public class GlobalExceptionHandler {
 
         log.warn("Unreadable request body | {} {}", request.getMethod(), request.getRequestURI());
         return buildResponse(HttpStatus.BAD_REQUEST, "Malformed or unreadable request body", request);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ExceptionResponse> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex, HttpServletRequest request) {
+
+        log.warn("File size exceeds limit | {} {}", request.getMethod(), request.getRequestURI());
+        return buildResponse(HttpStatus.BAD_REQUEST, "File size exceeds the 5MB limit", request);
     }
 
     // ── Security Exceptions ─────────────────────────────────────────────

@@ -194,7 +194,7 @@ public class UserController {
                     required = true,
                     example = "1"
             )
-            @PathVariable Long projectId){
+            @PathVariable Long projectId) {
         return ResponseEntity.ok(userService.getUserProjectById(projectId));
     }
 
@@ -219,8 +219,8 @@ public class UserController {
                     required = true,
                     example = "1"
             )
-            @PathVariable Long projectId, @Valid @RequestBody ProjectRequest projectRequest){
-        userService.updateUserProject(projectId,projectRequest);
+            @PathVariable Long projectId, @Valid @RequestBody ProjectRequest projectRequest) {
+        userService.updateUserProject(projectId, projectRequest);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -235,7 +235,7 @@ public class UserController {
                     required = true,
                     example = "1"
             )
-            @PathVariable Long projectId){
+            @PathVariable Long projectId) {
         userService.deleteUserProject(projectId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -262,7 +262,7 @@ public class UserController {
                     required = true,
                     example = "1"
             )
-            @PathVariable Long socialId){
+            @PathVariable Long socialId) {
         return ResponseEntity.ok(userService.getUserSocialLinkById(socialId));
     }
 
@@ -287,7 +287,7 @@ public class UserController {
                     required = true,
                     example = "1"
             )
-            @PathVariable Long socialId, @Valid @RequestBody SocialLinkRequest socialLinkRequest){
+            @PathVariable Long socialId, @Valid @RequestBody SocialLinkRequest socialLinkRequest) {
         userService.updateUserSocialLinks(socialId, socialLinkRequest);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
@@ -303,31 +303,57 @@ public class UserController {
                     required = true,
                     example = "1"
             )
-            @PathVariable Long socialId){
+            @PathVariable Long socialId) {
         userService.deleteUserLinks(socialId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     //resume
+
     @PostMapping(value = "/resume", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResumeResponse> addUserResume(@RequestParam("file")MultipartFile resume) throws IOException {
+    @Operation(
+            summary = "Upload user resume",
+            description = "Uploads a new resume (PDF) for the authenticated user. The resume file is stored and parsed for text content."
+    )
+    public ResponseEntity<ResumeResponse> addUserResume(
+            @Parameter(
+                    description = "The resume file to upload (PDF format)",
+                    required = true
+            )
+            @RequestParam("file") MultipartFile resume) throws IOException {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUserResume(resume));
     }
 
-    @GetMapping( "/resume")
-    public ResponseEntity<List<ResumeResponse>> getAllUserResumes(){
+    @GetMapping("/resume")
+    @Operation(
+            summary = "Get all user resumes",
+            description = "Retrieves all resumes associated with the authenticated user's profile."
+    )
+    public ResponseEntity<List<ResumeResponse>> getAllUserResumes() {
         return ResponseEntity.ok(userService.getAllUserResumes());
-
     }
 
     @GetMapping("/resume/last")
-    public ResponseEntity<ResumeResponse> getLastSubmittedResume(){
+    @Operation(
+            summary = "Get last submitted resume",
+            description = "Retrieves the most recently submitted resume for the authenticated user."
+    )
+    public ResponseEntity<ResumeResponse> getLastSubmittedResume() {
         return ResponseEntity.ok(userService.getLastSubmittedResume());
     }
 
     @GetMapping("/resume/view/{resumeId}")
-    public ResponseEntity<byte[]> viewUserResume(@PathVariable Long resumeId){
-
+    @Operation(
+            summary = "View user resume",
+            description = "Returns the resume PDF file for inline viewing in the browser by resume ID."
+    )
+    public ResponseEntity<byte[]> viewUserResume(
+            @Parameter(
+                    description = "The ID of the resume to view",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long resumeId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(
@@ -340,7 +366,17 @@ public class UserController {
     }
 
     @GetMapping("/resume/download/{resumeId}")
-    public ResponseEntity<byte[]> downloadUSerResume(@PathVariable Long resumeId){
+    @Operation(
+            summary = "Download user resume",
+            description = "Downloads the resume PDF file as an attachment by resume ID."
+    )
+    public ResponseEntity<byte[]> downloadUSerResume(
+            @Parameter(
+                    description = "The ID of the resume to download",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long resumeId) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(
@@ -354,7 +390,17 @@ public class UserController {
     }
 
     @DeleteMapping("/resume/{resumeId}")
-    public ResponseEntity<Void> deleteUserResume(@PathVariable Long resumeId) {
+    @Operation(
+            summary = "Delete user resume",
+            description = "Removes a resume from the authenticated user's profile by resume ID."
+    )
+    public ResponseEntity<Void> deleteUserResume(
+            @Parameter(
+                    description = "The ID of the resume to delete",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long resumeId) {
         userService.deleteUserResume(resumeId);
         return ResponseEntity.noContent().build();
     }

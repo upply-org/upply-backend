@@ -4,16 +4,14 @@ import com.upply.application.dto.ApplicationRequest;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
 import com.upply.common.PageResponse;
+import com.upply.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -24,21 +22,16 @@ import java.io.IOException;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final UserService userService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     @Operation(
             summary = "Create job application",
             description = "Creates a new job application with a resume file (PDF) and optional cover letter. The resume is parsed to extract text content."
     )
-    public ResponseEntity<ApplicationResponse> createJobApplication(
-            @Valid @RequestPart("application") ApplicationRequest applicationRequest,
-            @Parameter(
-                    description = "Resume file in PDF format",
-                    required = true
-            )
-            @RequestPart("file") MultipartFile resume)
+    public ResponseEntity<ApplicationResponse> createJobApplication(@Valid @RequestBody ApplicationRequest applicationRequest)
             throws IOException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(applicationService.createJobApplication(applicationRequest, resume));
+        return ResponseEntity.status(HttpStatus.CREATED).body(applicationService.createJobApplication(applicationRequest));
     }
 
     @GetMapping("/me")
@@ -74,9 +67,57 @@ public class ApplicationController {
                     example = "1"
             )
             @PathVariable Long applicationId
-    ){
+    ) {
         return ResponseEntity.ok(applicationService.getApplicationById(applicationId));
     }
+
+    @GetMapping("/{applicationId}/resume/view")
+    @Operation(
+            summary = "View application resume",
+            description = "Returns the resume PDF file associated with a job application for inline viewing in the browser."
+    )
+    public ResponseEntity<byte[]> viewUserResume(
+            @Parameter(
+                    description = "The ID of the application whose resume to view",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long applicationId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.builder("inline")
+                        .build()
+        );
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(applicationService.getApplicationResume(applicationId));
+    }
+
+    @GetMapping("/{applicationId}/resume/download")
+    @Operation(
+            summary = "Download application resume",
+            description = "Downloads the resume PDF file associated with a job application as an attachment."
+    )
+    public ResponseEntity<byte[]> downloadUserResume(
+            @Parameter(
+                    description = "The ID of the application whose resume to download",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long applicationId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.builder("attachment")
+                        .filename(applicationService.getResumeName(applicationId))
+                        .build()
+        );
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(applicationService.getApplicationResume(applicationId));
+    }
+
 
     @PatchMapping("/{applicationId}/status")
     @Operation(
@@ -96,9 +137,9 @@ public class ApplicationController {
                     example = "1"
             )
             @PathVariable Long applicationId
-    ){
+    ) {
         return ResponseEntity.ok(applicationService.updateApplicationStatus(applicationId, status));
     }
 
-    // TODO : update, delete endpoints. (after support storage)
+
 }
