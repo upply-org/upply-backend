@@ -14,26 +14,35 @@ import com.upply.job.enums.JobModel;
 import com.upply.job.enums.JobSeniority;
 import com.upply.job.enums.JobStatus;
 import com.upply.job.enums.JobType;
+import com.upply.notification.dto.DispatchPayload;
+import com.upply.notification.dto.NotificationEvent;
 import com.upply.profile.skill.Skill;
 import com.upply.profile.skill.SkillRepository;
 import com.upply.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.upply.config.KafkaConfig.NOTIFICATION_EVENTS;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class JobService {
 
     private final JobMapper jobMapper;
@@ -44,6 +53,7 @@ public class JobService {
     private final JobMatchingService jobMatchingService;
     private final ApplicationExcelExportService applicationExcelExportService;
     private final ExportTaskMapper exportTaskMapper;
+    private final KafkaTemplate<String, NotificationEvent> notificationKafkaTemplate;
     //TODO: use key-value database like redis!!
     private final Map<String, ExportTask> exportTasks = new ConcurrentHashMap<>();
 
@@ -66,6 +76,33 @@ public class JobService {
 
         // Store job embedding
         jobMatchingService.storeJobEmbedding(savedJob);
+
+        NotificationEvent notificationEvent = new NotificationEvent(
+                UUID.randomUUID().toString(),
+                "JOB_POSTED_SUCCESSFULLY",
+                savedJob.getPostedBy().getId(),
+                List.of(DispatchPayload.Channel.EMAIL),
+                Map.of(
+                        "jobTitle",  savedJob.getTitle(),
+                        "jobType",   savedJob.getType().name(),
+                        "seniority", savedJob.getSeniority().name(),
+                        "location",  savedJob.getLocation() != null ? savedJob.getLocation() : "Remote",
+                        "jobUrl",    "TODO" + savedJob.getId() //TODO
+                )
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                notificationKafkaTemplate.send(NOTIFICATION_EVENTS,
+                                String.valueOf(savedJob.getId()), notificationEvent)
+                        .exceptionally(ex -> {
+                            log.error("Failed to publish submission notification for application {}",
+                                    savedJob.getId(), ex);
+                            return null;
+                        });
+            }
+        });
 
         return jobMapper.toJobResponse(savedJob);
     }
@@ -246,6 +283,32 @@ public class JobService {
         // Update embedding with OPEN status (for filtering)
         jobMatchingService.storeJobEmbedding(savedJob);
 
+        NotificationEvent notificationEvent = new NotificationEvent(
+                UUID.randomUUID().toString(),
+                "JOB_POSTED_SUCCESSFULLY",
+                savedJob.getPostedBy().getId(),
+                List.of(DispatchPayload.Channel.EMAIL),
+                Map.of(
+                        "jobTitle",  savedJob.getTitle(),
+                        "jobType",   savedJob.getType().name(),
+                        "seniority", savedJob.getSeniority().name(),
+                        "location",  savedJob.getLocation() != null ? savedJob.getLocation() : "Remote",
+                        "jobUrl",    "TODO" + savedJob.getId() //TODO
+                )
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                notificationKafkaTemplate.send(NOTIFICATION_EVENTS,
+                                String.valueOf(savedJob.getId()), notificationEvent)
+                        .exceptionally(ex -> {
+                            log.error("Failed to publish submission notification for application {}",
+                                    savedJob.getId(), ex);
+                            return null;
+                        });
+            }
+        });
         return jobMapper.toJobResponse(savedJob);
     }
 

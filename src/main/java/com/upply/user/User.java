@@ -46,11 +46,10 @@ public class User implements UserDetails, Principal {
     private String password;
 
     private String university;
-    private String cv;
-
     private boolean accountLocked;
     private boolean accountActivated;
 
+    private String deviceToken;
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;

@@ -57,7 +57,7 @@ spring:
     azure:
       monitor:
         enabled: false
-  # Exclude Redis auto-configurations
+  # Exclude Redis and Kafka auto-configurations
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
@@ -91,3 +91,6 @@ app:
 otel:
   sdk:
     disabled: true
+firebase:
+  service:
+    account: test

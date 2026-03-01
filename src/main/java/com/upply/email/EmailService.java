@@ -3,6 +3,7 @@ package com.upply.email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -59,9 +61,11 @@ public class EmailService {
                 helper.setText(htmlContent, true);
 
                 mailSender.send(message);
+                log.info("Email sent to {} | template: {}", to, template.getName());
 
             } catch (MessagingException e) {
-                throw new RuntimeException("Failed to send email", e);
+                log.error("Failed to send email to {} | template: {} | reason: {}",
+                        to, template.getName(), e.getMessage());
             }
         });
     }

@@ -405,4 +405,11 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // device token
+
+    @PostMapping("/device-token/{token}")
+    public ResponseEntity<Void> saveDeviceToken(@PathVariable String token){
+        userService.saveDeviceToken(token);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
