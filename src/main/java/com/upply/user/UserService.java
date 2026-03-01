@@ -322,4 +322,12 @@ public class UserService {
         }
     }
 
+    // mobile device token
+
+    public void saveDeviceToken(String deviceToken) {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+        user.setDeviceToken(deviceToken);
+        userRepository.save(user);
+    }
 }

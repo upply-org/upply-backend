@@ -116,3 +116,7 @@ azure:
 applicationinsights:
   connection:
     string: ${OBSERVE}
+
+firebase:
+  service:
+    account: ${FIREBASE_PRIVATE_KEY}
