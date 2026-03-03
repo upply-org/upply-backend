@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
@@ -22,4 +23,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
         WHERE j.id = :jobId
     """)
     List<String> findJobSkillNames(@Param("jobId") Long jobId);
+
+    @Query("select distinct j from User u join u.userBookmarkedJobs j where u.id = ?#{principal.getId()}")
+    Set<Job> findUserBookMarks();
 }

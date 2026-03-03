@@ -78,6 +78,14 @@ public class User implements UserDetails, Principal {
     @OneToMany(mappedBy = "user")
     private List<SocialLink> socialLinks = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "user_bookmarked_jobs",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "job_id")
+    )
+    private Set<Job> userBookmarkedJobs = new HashSet<>();
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(); // TODO
