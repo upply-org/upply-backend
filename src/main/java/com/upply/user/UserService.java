@@ -1,6 +1,10 @@
 package com.upply.user;
 
 import com.upply.exception.custom.OperationNotPermittedException;
+import com.upply.job.Job;
+import com.upply.job.JobRepository;
+import com.upply.job.dto.JobListResponse;
+import com.upply.job.dto.JobMapper;
 import com.upply.profile.experience.*;
 import com.upply.profile.experience.dto.ExperienceMapper;
 import com.upply.profile.experience.dto.ExperienceRequest;
@@ -45,11 +49,13 @@ public class UserService {
     private final ExperienceRepository experienceRepository;
     private final ProjectRepository projectRepository;
     private final SocialLinkRepository socialLinkRepository;
+    private final JobRepository jobRepository;
     private final UserMapper userMapper;
     private final SkillMapper skillMapper;
     private final ExperienceMapper experienceMapper;
     private final ProjectMapper projectMapper;
     private final SocialLinkMapper socialLinkMapper;
+    private final JobMapper jobMapper;
     private final AzureStorageService azureStorageService;
     private final ResumeRepository resumeRepository;
     private final ResumeMapper resumeMapper;
@@ -328,6 +334,37 @@ public class UserService {
         User user = userRepository.getCurrentUser()
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
         user.setDeviceToken(deviceToken);
+        userRepository.save(user);
+    }
+
+    // bookmarks
+
+    @Transactional
+    public void addUserBookmark(Long jobId) {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + jobId + " not found"));
+        user.getUserBookmarkedJobs().add(job);
+        userRepository.save(user);
+    }
+
+    public Set<JobListResponse> getUserBookmark() {
+        return jobRepository.findUserBookMarks()
+                .stream()
+                .map(jobMapper::toJobListResponse)
+                .collect(Collectors.toSet());
+    }
+
+    @Transactional
+    public void removeUserBookmark(Long jobId) {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + jobId + " not found"));
+
+        user.getUserBookmarkedJobs().remove(job);
         userRepository.save(user);
     }
 }

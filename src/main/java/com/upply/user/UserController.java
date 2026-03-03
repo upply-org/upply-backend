@@ -1,5 +1,6 @@
 package com.upply.user;
 
+import com.upply.job.dto.JobListResponse;
 import com.upply.profile.experience.dto.ExperienceRequest;
 import com.upply.profile.experience.dto.ExperienceResponse;
 import com.upply.profile.project.dto.ProjectRequest;
@@ -410,6 +411,49 @@ public class UserController {
     @PostMapping("/device-token/{token}")
     public ResponseEntity<Void> saveDeviceToken(@PathVariable String token){
         userService.saveDeviceToken(token);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    // bookmark
+
+    @PostMapping("/bookmarks/{jobId}")
+    @Operation(
+            summary = "Add job to bookmarks",
+            description = "Adds a job to the authenticated user's bookmarked jobs."
+    )
+    public ResponseEntity<Void> addUserBookmark(
+            @Parameter(
+                    description = "The ID of the job to bookmark",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long jobId) {
+        userService.addUserBookmark(jobId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/bookmarks")
+    @Operation(
+            summary = "Get user's bookmarked jobs",
+            description = "Retrieves all jobs bookmarked by the authenticated user."
+    )
+    public ResponseEntity<Set<JobListResponse>> getUserBookmark() {
+        return ResponseEntity.ok().body(userService.getUserBookmark());
+    }
+
+    @DeleteMapping("/bookmarks/{jobId}")
+    @Operation(
+            summary = "Remove job from bookmarks",
+            description = "Removes a job from the authenticated user's bookmarked jobs."
+    )
+    public ResponseEntity<Void> deleteUserBookMark(
+            @Parameter(
+                    description = "The ID of the job to remove from bookmarks",
+                    required = true,
+                    example = "1"
+            )
+            @PathVariable Long jobId) {
+        userService.removeUserBookmark(jobId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
