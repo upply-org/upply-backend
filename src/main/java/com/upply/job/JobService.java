@@ -22,6 +22,7 @@ import com.upply.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,6 +57,8 @@ public class JobService {
     private final KafkaTemplate<String, NotificationEvent> notificationKafkaTemplate;
     //TODO: use key-value database like redis!!
     private final Map<String, ExportTask> exportTasks = new ConcurrentHashMap<>();
+    @Value("${app.export.task-expire-seconds}")
+    private int TASK_EXPIRE_TIME;
 
     @Transactional
     public JobResponse createJob(@Valid JobRequest request, Authentication connectedUser) {
@@ -355,7 +358,7 @@ public class JobService {
                 applications.isFirst(),
                 applications.isLast());
     }
-
+    // export application to excel file
     public ExportTaskResponse startExportTask(Long jobId, Authentication connectedUser) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + jobId + " not found"));
@@ -376,7 +379,7 @@ public class JobService {
 
 
         String taskId = UUID.randomUUID().toString();
-        ExportTask task = new ExportTask(taskId, jobId);
+        ExportTask task = new ExportTask(taskId, jobId,TASK_EXPIRE_TIME);
         exportTasks.put(taskId, task);
 
         Thread.ofVirtual().name("export-job-" + jobId).start(() -> processExport(task, applications));
@@ -444,7 +447,7 @@ public class JobService {
         return task.getData();
     }
 
-    @Scheduled(fixedDelay = 60_000)
+    @Scheduled(fixedDelayString = "${app.export.cleanup-interval-ms}")
     public void cleanExpiredTasks() {
         exportTasks.entrySet().removeIf(
                 entry -> entry.getValue().getExpireAt().isBefore(Instant.now())

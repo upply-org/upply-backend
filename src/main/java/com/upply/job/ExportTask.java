@@ -2,6 +2,7 @@ package com.upply.job;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 
@@ -17,15 +18,15 @@ public class ExportTask {
     private final Long jobId;
     private volatile Status status;
     private volatile byte[] data;
-    private volatile String errorMessage;
+    private String errorMessage;
     private final Instant createdAt;
-    private Instant expireAt;
+    private final Instant expireAt;
 
-    public ExportTask(String taskId, Long jobId) {
+    public ExportTask(String taskId, Long jobId, int taskExportTime) {
         this.taskId = taskId;
         this.jobId = jobId;
         this.status = Status.PROCESSING;
         this.createdAt = Instant.now();
-        this.expireAt = Instant.now().plusSeconds(600);
+        this.expireAt = Instant.now().plusSeconds(taskExportTime);
     }
 }
