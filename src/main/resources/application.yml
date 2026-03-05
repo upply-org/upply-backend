@@ -107,6 +107,9 @@ jwt:
 
 app:
   activation-base-url: "http://localhost:8080/api/v1/auth/activate"
+  export:
+    task-expire-seconds: ${TASK_EXPIRE_SECONDS}
+    cleanup-interval-ms: ${SCULDER_CLEANUP_TIME}
 
 azure:
   storage:
