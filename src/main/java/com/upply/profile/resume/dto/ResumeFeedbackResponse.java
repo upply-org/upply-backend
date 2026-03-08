@@ -14,6 +14,7 @@ public record ResumeFeedbackResponse(
         Map<ResumeSection, String> fixes,
         List<String> topStrengths,
         List<String> quickWins,
+        Integer jobMatchScore,
         List<String> matchedSkills,
         List<String> missingSkills,
         String topTip
@@ -32,7 +33,7 @@ public record ResumeFeedbackResponse(
         return new ResumeFeedbackResponse(
                 summary, scores, feedback, fixes,
                 topStrengths, quickWins,
-                null,  null, null   // job-specific fields → null
+                null,  null,null, null   // job-specific fields → null
         );
     }
 
@@ -46,16 +47,19 @@ public record ResumeFeedbackResponse(
             Map<ResumeSection, String> fixes,
             List<String> topStrengths,
             List<String> quickWins,
+            Integer jobMatchScore,
             List<String> matchedSkills,
             List<String> missingSkills,
             String topTip) {
 
         return new ResumeFeedbackResponse(
                 summary, scores, feedback, fixes,
-                topStrengths, quickWins,
+                topStrengths, quickWins, jobMatchScore,
                 matchedSkills, missingSkills, topTip
         );
     }
 
-
+    public boolean isJobSpecific() {
+        return jobMatchScore != null;
+    }
 }
