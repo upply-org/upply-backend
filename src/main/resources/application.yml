@@ -50,7 +50,9 @@ spring:
           uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer.json
         onnx:
           model-uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/model.onnx
-
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY}
 
   data:
     redis:
