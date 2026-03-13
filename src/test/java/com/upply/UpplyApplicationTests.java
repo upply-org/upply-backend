@@ -8,7 +8,6 @@ import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
 import com.upply.profile.resume.AzureStorageService;
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -37,8 +36,6 @@ class UpplyApplicationTests {
 	private KafkaTemplate<String, NotificationEvent> notificationEventKafkaTemplate;
 	@MockitoBean
 	private KafkaTemplate<String, DispatchPayload> dispatchKafkaTemplate;
-	@MockitoBean
-	private ChatClient chatClient;
 	@Test
 	void contextLoads() {
 	}

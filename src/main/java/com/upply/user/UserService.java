@@ -1,5 +1,6 @@
 package com.upply.user;
 
+import com.upply.common.NormalizeSkillName;
 import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.job.Job;
 import com.upply.job.JobRepository;
@@ -96,7 +97,8 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User Not found"));
 
         String normalizedName =
-                ((skillRequest.getSkillName() == null) ? null : skillRequest.getSkillName().toLowerCase().replaceAll("\\s+", ""));
+                ((skillRequest.getSkillName() == null) ? null : NormalizeSkillName.normalizeSkill(skillRequest.getSkillName()));
+
         Skill skill = skillRepository.findSkillByName(normalizedName)
                 .orElseGet(() -> {
                     Skill newSkill = new Skill();

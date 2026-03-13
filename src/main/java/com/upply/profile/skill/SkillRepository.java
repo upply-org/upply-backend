@@ -11,6 +11,6 @@ public interface SkillRepository extends JpaRepository <Skill, Long> {
     @Query("select s from Skill s where s.id = :id")
     Optional<Skill> findById(Long id);
 
-    @Query("select s from Skill s where s.searchName LIKE concat('%', :name, '%')")
+    @Query("select s from Skill s where s.searchName = :name")
     Optional<Skill> findSkillByName(String name);
 }

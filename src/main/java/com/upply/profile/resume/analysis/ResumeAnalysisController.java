@@ -1,4 +1,4 @@
-package com.upply.profile.resume;
+package com.upply.profile.resume.analysis;
 
 import com.upply.profile.resume.dto.ResumeFeedbackResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/user/me/resume")
-@Tag(name = "User", description = "APIs for managing authenticated user profile, skills, and experiences")
+@RequestMapping("/user/me/resume/feedback")
+@Tag(name = "Resume Analysis", description = "Generative AI Resume Analysis")
 public class ResumeAnalysisController {
     private final ResumeAnalysisService resumeAnalysisService;
 
-    @GetMapping("/feedback/{resumeId}")
+    @GetMapping("/{resumeId}")
     @Operation(
             summary = "Get resume feedback",
             description = "Analyzes the specified resume of the authenticated user and returns AI-generated feedback and recommendations."
@@ -33,7 +33,7 @@ public class ResumeAnalysisController {
         return ResponseEntity.ok(resumeAnalysisService.analysisProfile(resumeId));
     }
 
-    @GetMapping("/feedback/{resumeId}/job/{jobId}")
+    @GetMapping("/{resumeId}/job/{jobId}")
     @Operation(
             summary = "Get resume feedback for specific job",
             description = "Analyzes how well the specified resume matches a given job posting and returns targeted feedback and match insights."
