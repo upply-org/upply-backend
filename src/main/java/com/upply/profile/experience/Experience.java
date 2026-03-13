@@ -23,6 +23,7 @@ public class Experience {
     private String organization;
     private Date startDate;
     private Date endDate;
+    @Lob
     private String description;
 
     @ManyToOne

@@ -1,19 +1,21 @@
-package com.upply.profile.resume;
+package com.upply.profile.resume.analysis;
 
 import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.job.Job;
 import com.upply.job.JobRepository;
+import com.upply.profile.resume.AzureStorageService;
+import com.upply.profile.resume.ResumeRepository;
 import com.upply.profile.resume.dto.ResumeFeedbackResponse;
 import com.upply.profile.resume.enums.ResumeSection;
 import com.upply.profile.resume.enums.ResumeSectionGroups;
 import com.upply.profile.skill.Skill;
 import com.upply.user.User;
 import com.upply.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +26,6 @@ import java.util.stream.Collectors;
 import static org.springframework.util.StringUtils.truncate;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class ResumeAnalysisService {
     private final ChatClient chatClient;
@@ -32,6 +33,19 @@ public class ResumeAnalysisService {
     private final ResumeRepository resumeRepository;
     private final JobRepository jobRepository;
     private final AzureStorageService azureStorageService;
+
+    public ResumeAnalysisService(
+            @Qualifier("resumeAnalysisChatClient") ChatClient chatClient,
+            UserRepository      userRepository,
+            ResumeRepository    resumeRepository,
+            JobRepository       jobRepository,
+            AzureStorageService azureStorageService) {
+        this.chatClient          = chatClient;
+        this.userRepository      = userRepository;
+        this.resumeRepository    = resumeRepository;
+        this.jobRepository       = jobRepository;
+        this.azureStorageService = azureStorageService;
+    }
 
     /**
      * Generic profile analysis, without job context

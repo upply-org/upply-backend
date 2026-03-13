@@ -3,6 +3,8 @@ package com.upply.profile.skill;
 import jakarta.persistence.*;
 import lombok.*;
 
+import static com.upply.common.NormalizeSkillName.normalizeSkill;
+
 
 @Builder
 @Data
@@ -43,8 +45,7 @@ public class Skill {
     @PreUpdate
     private void normalizedSearchName() {
         this.searchName = this.name != null ?
-                this.name.toLowerCase()
-                        .replaceAll("\\s+", "")
+                normalizeSkill(name)
                 : null;
     }
 
