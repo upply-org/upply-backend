@@ -51,5 +51,6 @@ public class Application {
 
     private double matchingRatio;
 
+    @Lob
+    private String summary;
 }
-

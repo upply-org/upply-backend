@@ -31,10 +31,10 @@ public class ApplicationMapper {
                 .university(application.getApplicant().getUniversity())
                 .jobId(application.getJob().getId())
                 .jobTitle(application.getJob().getTitle())
-                    // TO-DO get a resume file.
                 .coverLetter(application.getCoverLetter())
                 .status(application.getStatus())
                 .matchingRatio(application.getMatchingRatio())
+                .summary(application.getSummary())
                 .build();
     }
 }
