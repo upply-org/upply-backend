@@ -16,4 +16,9 @@ public class AiPromptsConfig {
     public Resource resumeParserPrompt(){
         return new ClassPathResource("prompts/resume-parser.st");
     }
+
+    @Bean
+    public Resource applicationSummaryPrompt(){
+        return  new ClassPathResource("prompts/application-summary.st");
+    }
 }

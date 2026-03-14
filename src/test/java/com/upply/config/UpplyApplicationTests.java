@@ -42,4 +42,9 @@ public class UpplyApplicationTests {
     public ChatClient resumeParserChatClient() {
         return Mockito.mock(ChatClient.class);
     }
+
+    @Bean
+    public ChatClient applicationSummaryChatClient(){
+        return Mockito.mock(ChatClient.class);
+    }
 }

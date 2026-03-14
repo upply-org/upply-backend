@@ -28,6 +28,8 @@ public record ApplicationResponse(
 
         ApplicationStatus status,
 
-        double matchingRatio
+        double matchingRatio,
+
+        String summary
 ) {
 }

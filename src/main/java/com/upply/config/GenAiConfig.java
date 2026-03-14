@@ -53,4 +53,12 @@ public class GenAiConfig {
        return build(builder, prompt, 0.0, 3072);
    }
 
+   @Bean
+    public ChatClient applicationSummaryChatClient(
+            ChatClient.Builder builder,
+            @Qualifier("applicationSummaryPrompt") Resource prompt
+   ){
+       return build(builder, prompt, 0.1, 3072);
+   }
+
 }
