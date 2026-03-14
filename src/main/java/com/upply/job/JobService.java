@@ -27,6 +27,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
@@ -123,6 +125,27 @@ public class JobService {
         Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("createdDate").descending());
 
         Page<Job> jobs = jobRepository.findByStatus(JobStatus.OPEN, pageable);
+
+        List<JobListResponse> jobResponses = jobs.stream()
+                .map(jobMapper::toJobListResponse)
+                .toList();
+
+        return new PageResponse<>(
+                jobResponses,
+                jobs.getNumber(),
+                jobs.getSize(),
+                jobs.getTotalElements(),
+                jobs.getTotalPages(),
+                jobs.isFirst(),
+                jobs.isLast());
+    }
+
+    public PageResponse<JobListResponse> searchJobs(int pageNumber, int size, JobFilter filter) {
+
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("createdDate").descending());
+        Specification<Job> spec = JobSpecification.withFilters(filter);
+
+        Page<Job> jobs = jobRepository.findAll(spec, pageable);
 
         List<JobListResponse> jobResponses = jobs.stream()
                 .map(jobMapper::toJobListResponse)

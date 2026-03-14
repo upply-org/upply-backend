@@ -64,6 +64,36 @@ public class JobController {
         return ResponseEntity.ok(jobService.getAllOpenJobs(pageNumber, size, connectedUser));
     }
 
+    @GetMapping("/search")
+    @Operation(
+            summary = "Search jobs",
+            description = "Searches for open job postings using optional filters. All filter fields are optional and can be combined freely. Returns a paginated list of matching jobs."
+    )
+    public ResponseEntity<PageResponse<JobListResponse>> searchJobs(
+            @Parameter(
+                    description = "Page number (0-indexed)",
+                    required = true,
+                    example = "0"
+            )
+            @RequestParam int pageNumber,
+            @Parameter(
+                    description = "Page size",
+                    required = true,
+                    example = "10"
+            )
+            @RequestParam int size,
+            @Parameter(
+                    description = "Filter criteria. Supported fields: " +
+                            "keyword (free-text search on title/description), " +
+                            "type (e.g. FULL_TIME, PART_TIME, INTERNSHIP), " +
+                            "seniority (e.g. JUNIOR, MID, SENIOR, LEAD), " +
+                            "model (e.g. REMOTE, ONSITE, HYBRID), " +
+                            "location (city or country string)."
+            )
+            @ModelAttribute JobFilter filter) {
+        return ResponseEntity.ok(jobService.searchJobs(pageNumber, size, filter));
+    }
+
     @GetMapping("/matched")
     @Operation(
             summary = "Get matched jobs for current user",
