@@ -73,7 +73,7 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_URL}
     properties:
-      security.protocol: SSL
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL}
       ssl.truststore.location: ${KAFKA_TRUSTSTORE_PATH}
       ssl.truststore.password: ${KAFKA_SSL_PASSWORD}
       ssl.truststore.type: JKS

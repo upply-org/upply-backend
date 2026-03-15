@@ -22,17 +22,22 @@ public class FirebaseConfig {
     private String serviceAccountJson;
 
     @Bean
-    public FirebaseApp firebaseApp() throws IOException {
+    public FirebaseApp firebaseApp() {
         if (!FirebaseApp.getApps().isEmpty()) {
             return FirebaseApp.getInstance();
         }
-        InputStream stream = new ByteArrayInputStream((serviceAccountJson.getBytes(StandardCharsets.UTF_8)));
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(stream))
-                .build();
-        FirebaseApp app = FirebaseApp.initializeApp(options);
-        log.info("Firebase initialized successfully");
-        return app;
+        try {
+            InputStream stream = new ByteArrayInputStream(serviceAccountJson.getBytes(StandardCharsets.UTF_8));
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(stream))
+                    .build();
+            FirebaseApp app = FirebaseApp.initializeApp(options);
+            log.info("Firebase initialized successfully");
+            return app;
+        } catch (Exception e) {
+            log.warn("Firebase initialization skipped - invalid or missing credentials: {}", e.getMessage());
+            return null;
+        }
     }
 
 }
