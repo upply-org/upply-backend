@@ -1,5 +1,6 @@
 package com.upply.notification;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
@@ -12,6 +13,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class PushService {
     public void send(DispatchPayload payload) {
+        if (FirebaseApp.getApps().isEmpty()) {
+            log.warn("Push notification skipped - Firebase not initialized");
+            return;
+        }
         Thread.startVirtualThread(() -> {
             try {
                 Message message = Message.builder()
