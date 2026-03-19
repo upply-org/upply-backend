@@ -5,6 +5,9 @@ import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.exception.custom.ResourceNotFoundException;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -69,6 +72,25 @@ public class GlobalExceptionHandler {
 
         log.warn("Validation failed: {} | {} {}", errors, request.getMethod(), request.getRequestURI());
         return buildResponse(HttpStatus.BAD_REQUEST, "Validation failed", request, errors);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleConstraintValidationException(
+            ConstraintViolationException ex, HttpServletRequest request) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+
+            String fieldName = "";
+            for (Path.Node node : violation.getPropertyPath()) {
+                fieldName = node.getName();
+            }
+            errors.put(fieldName, violation.getMessage());
+        }
+
+        log.warn("Validation failed: {} | {} {}", errors, request.getMethod(), request.getRequestURI());
+        return buildResponse(HttpStatus.BAD_REQUEST, "Invalid request parameters", request, errors);
     }
 
     // ── Request Errors ──────────────────────────────────────────────────

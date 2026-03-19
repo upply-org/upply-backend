@@ -11,14 +11,18 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping("/jobs")
 @RequiredArgsConstructor
 @Tag(name = "Job", description = "APIs for managing jobs")
+@Validated
 public class JobController {
 
     private final JobService jobService;
@@ -52,13 +56,14 @@ public class JobController {
                     required = false,
                     example = "0"
             )
-            @RequestParam(name = "page", defaultValue = "0", required = false) int pageNumber,
+            @RequestParam(name = "page", defaultValue = "0", required = false) @Min(value = 0, message = "Page index must not be less than zero") int pageNumber,
             @Parameter(
                     description = "Page size",
                     required = false,
                     example = "10"
             )
-            @RequestParam(name = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(name = "size", defaultValue = "10", required = false) @Min(value = 1, message = "Page size must be at least 1")
+            @Max(value = 50, message = "Page size must not exceed 50") int size,
             Authentication connectedUser
     ) {
         return ResponseEntity.ok(jobService.getAllOpenJobs(pageNumber, size, connectedUser));
@@ -75,13 +80,14 @@ public class JobController {
                     required = true,
                     example = "0"
             )
-            @RequestParam int pageNumber,
+            @RequestParam @Min(value = 0, message = "Page index must not be less than zero")int pageNumber,
             @Parameter(
                     description = "Page size",
                     required = true,
                     example = "10"
             )
-            @RequestParam int size,
+            @RequestParam @Min(value = 1, message = "Page size must be at least 1")
+            @Max(value = 50, message = "Page size must not exceed 50") int size,
             @Parameter(
                     description = "Filter criteria. Supported fields: " +
                             "keyword (free-text search on title/description), " +
@@ -90,7 +96,7 @@ public class JobController {
                             "model (e.g. REMOTE, ONSITE, HYBRID), " +
                             "location (city or country string)."
             )
-            @ModelAttribute JobFilter filter) {
+            @Valid @ModelAttribute JobFilter filter) {
         return ResponseEntity.ok(jobService.searchJobs(pageNumber, size, filter));
     }
 
@@ -150,13 +156,14 @@ public class JobController {
                     required = false,
                     example = "0"
             )
-            @RequestParam(name = "page", defaultValue = "0", required = false) int pageNumber,
+            @RequestParam(name = "page", defaultValue = "0", required = false) @Min(value = 0, message = "Page index must not be less than zero") int pageNumber,
             @Parameter(
                     description = "Page size",
                     required = false,
                     example = "10"
             )
-            @RequestParam(name = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(name = "size", defaultValue = "10", required = false) @Min(value = 1, message = "Page size must be at least 1")
+            @Max(value = 50, message = "Page size must not exceed 50") int size,
             @Parameter(
                     description = "The ID of the job",
                     required = true,
@@ -178,13 +185,14 @@ public class JobController {
                     required = false,
                     example = "0"
             )
-            @RequestParam(name = "page", defaultValue = "0", required = false) int pageNumber,
+            @RequestParam(name = "page", defaultValue = "0", required = false) @Min(value = 0, message = "Page index must not be less than zero") int pageNumber,
             @Parameter(
                     description = "Page size",
                     required = false,
                     example = "10"
             )
-            @RequestParam(name = "size", defaultValue = "10", required = false) int size,
+            @RequestParam(name = "size", defaultValue = "10", required = false) @Min(value = 1, message = "Page size must be at least 1")
+            @Max(value = 50, message = "Page size must not exceed 50") int size,
             @Parameter(
                     description = "The ID of the job",
                     required = true,
