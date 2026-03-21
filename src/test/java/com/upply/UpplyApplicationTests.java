@@ -10,6 +10,7 @@ import com.upply.profile.resume.AzureStorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -25,6 +26,7 @@ import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 class UpplyApplicationTests {
 
 	@MockitoBean
+	@Qualifier("jobsVectorStore")
 	private VectorStore vectorStore;
 	@MockitoBean
 	private AzureStorageService azureStorageService;

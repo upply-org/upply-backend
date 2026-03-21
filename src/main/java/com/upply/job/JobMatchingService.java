@@ -4,11 +4,11 @@ import com.upply.user.User;
 import com.upply.user.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,13 +18,20 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class JobMatchingService {
-
-    private final VectorStore vectorStore;
+    private final VectorStore jobsVectorStore;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
 
+    public JobMatchingService(
+            @Qualifier("jobsVectorStore") VectorStore jobsVectorStore,
+            JobRepository jobRepository,
+            UserRepository userRepository
+    ) {
+        this.jobsVectorStore = jobsVectorStore;
+        this.jobRepository = jobRepository;
+        this.userRepository = userRepository;
+    }
 
 
     private String buildJobContent(Job job) {
@@ -41,6 +48,7 @@ public class JobMatchingService {
 
         return content.toString();
     }
+
     private String buildUserProfile(User user) {
 
         StringBuilder profile = new StringBuilder();
@@ -73,28 +81,24 @@ public class JobMatchingService {
                     )
             );
 
-            vectorStore.add(List.of(document));
+            jobsVectorStore.add(List.of(document));
             log.info("Stored embedding for job ID: {}", job.getId());
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error storing embedding for job ID: {}", job.getId(), e);
             throw new RuntimeException("Failed to store embedding", e);
         }
 
     }
+
     public void deleteJobEmbedding(Long jobId) {
 
         try {
-            vectorStore.delete(List.of(String.valueOf(jobId)));
+            jobsVectorStore.delete(List.of(String.valueOf(jobId)));
             log.info("Deleted embedding for job ID: {}", jobId);
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error deleting embedding for job ID: {}", jobId, e);
         }
     }
-
 
 
     // Container class to hold Job and its similarity score
@@ -118,13 +122,12 @@ public class JobMatchingService {
                     .similarityThreshold(0.6) // Minimum similarity score (0.0 to 1.0)
                     .build();
 
-            List<Document> similarDocuments = vectorStore.similaritySearch(searchRequest);
+            List<Document> similarDocuments = jobsVectorStore.similaritySearch(searchRequest);
 
             // Get job IDs from Redis (already in similarity order)
             List<Long> jobIds = similarDocuments.stream()
                     .map(doc -> Long.valueOf(doc.getId()))
                     .toList();
-
 
 
             // Fetch all jobs from database (order is random)
@@ -139,13 +142,12 @@ public class JobMatchingService {
                     ));
 
 
-
             // streaming on jobIds because it's the only preserved order
             return jobIds.stream()
                     .map(id -> {
                         Job job = jobMap.get(id);
 
-                        if(job != null) {
+                        if (job != null) {
                             Double score = scoreMap.get(id);
                             return new JobWithScore(job, score);
                         }
@@ -154,9 +156,7 @@ public class JobMatchingService {
                     })
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error finding similar jobs for user ID: {}", user.getId(), e);
             throw new RuntimeException("Failed to find similar jobs", e);
         }
@@ -174,9 +174,9 @@ public class JobMatchingService {
                     .similarityThreshold(0.0)
                     .build();
 
-            List<Document> results = vectorStore.similaritySearch(searchRequest);
+            List<Document> results = jobsVectorStore.similaritySearch(searchRequest);
             return results.stream()
-                    .mapToDouble(doc -> doc.getScore() == null ? 0.0 : (Math.round((doc.getScore()*100.0))/100.0))
+                    .mapToDouble(doc -> doc.getScore() == null ? 0.0 : (Math.round((doc.getScore() * 100.0)) / 100.0))
                     .findFirst()
                     .orElse(0.0);
 
