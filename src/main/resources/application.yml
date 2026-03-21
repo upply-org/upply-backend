@@ -47,20 +47,20 @@ spring:
           enabled: true
           directory: /tmp/spring-ai-onnx-model
         tokenizer:
-          uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer.json
+          uri: https://huggingface.co/BAAI/bge-base-en-v1.5/resolve/main/tokenizer.json
         onnx:
-          model-uri: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/onnx/model.onnx
+          model-uri: https://huggingface.co/BAAI/bge-base-en-v1.5/resolve/main/onnx/model.onnx
     google:
       genai:
         api-key: ${GEMINI_API_KEY}
 
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      username: ${REDIS_USERNAME}
-      password: ${REDIS_PASSWORD}
-      # For production, consider adding connection pooling
+  #  data:
+#    redis:
+#      host: ${REDIS_HOST}
+#      port: ${REDIS_PORT}
+#      username: ${REDIS_USERNAME}
+#      password: ${REDIS_PASSWORD}
+
   servlet:
     multipart:
       enabled: true
@@ -117,6 +117,9 @@ azure:
   storage:
     connection-String: ${AZURE_STORAGE_CONNECTION_STRING}
     container-name: ${AZURE_STORAGE_CONTAINER_NAME}
+  search:
+    endpoint: ${AZURE_SEARCH_ENDPOINT}
+    key: ${AZURE_SEARCH_KEY}
 
 applicationinsights:
   connection:

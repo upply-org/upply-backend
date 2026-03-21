@@ -1,52 +1,49 @@
 package com.upply.config;
 
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.search.documents.indexes.SearchIndexClient;
+import com.azure.search.documents.indexes.SearchIndexClientBuilder;
 import org.springframework.ai.embedding.EmbeddingModel;
-import org.springframework.ai.vectorstore.redis.RedisVectorStore;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.azure.AzureVectorStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import redis.clients.jedis.JedisPooled;
+
+import java.util.List;
 
 @Configuration
 @Profile("!test")
 public class VectorStoreConfig {
 
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
-
-    @Value("${spring.data.redis.username:}")
-    private String redisUsername;
-
-    @Value("${spring.data.redis.password:}")
-    private String redisPassword;
+    @Value("${azure.search.endpoint}")
+    private String searchEndpoint;
+    @Value("${azure.search.key}")
+    private String searchKey;
 
     @Bean
-    public JedisPooled jedisPooled() {
-        if (redisUsername != null && !redisUsername.isBlank()) {
-            return new JedisPooled(redisHost, redisPort, redisUsername, redisPassword);
-        }
-        return new JedisPooled(redisHost, redisPort);
+    public SearchIndexClient searchIndexClient(){
+        return new SearchIndexClientBuilder()
+                .endpoint(searchEndpoint)
+                .credential(new AzureKeyCredential(searchKey))
+                .buildClient();
     }
-
-    @Bean
-    public RedisVectorStore vectorStore(JedisPooled jedisPooled, EmbeddingModel embeddingModel) {
-        return RedisVectorStore.builder(jedisPooled, embeddingModel)
-                .indexName("upply-vector-index")
-                .prefix("upply:embedding:")
-                .metadataFields(
-                        RedisVectorStore.MetadataField.tag("jobId"),
-                        RedisVectorStore.MetadataField.tag("title"),
-                        RedisVectorStore.MetadataField.tag("type"),
-                        RedisVectorStore.MetadataField.tag("seniority"),
-                        RedisVectorStore.MetadataField.tag("model"),
-                        RedisVectorStore.MetadataField.tag("location"),
-                        RedisVectorStore.MetadataField.tag("status")
-                )
-                .initializeSchema(true)
+    @Bean("jobsVectorStore")
+    public VectorStore jobsVectorStore(SearchIndexClient searchIndexClient,
+                                   EmbeddingModel embeddingModel) {
+        return AzureVectorStore.builder(searchIndexClient, embeddingModel)
+                .indexName("jobs-index")
+                .initializeSchema(false)
+                .filterMetadataFields(List.of(
+                        AzureVectorStore.MetadataField.text("jobId"),
+                        AzureVectorStore.MetadataField.text("title"),
+                        AzureVectorStore.MetadataField.text("type"),
+                        AzureVectorStore.MetadataField.text("seniority"),
+                        AzureVectorStore.MetadataField.text("model"),
+                        AzureVectorStore.MetadataField.text("location"),
+                        AzureVectorStore.MetadataField.text("status")
+                ))
                 .build();
     }
 }
