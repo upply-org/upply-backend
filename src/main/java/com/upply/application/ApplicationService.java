@@ -5,6 +5,7 @@ import com.upply.application.dto.ApplicationMatchEvent;
 import com.upply.application.dto.ApplicationRequest;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
+import com.upply.common.NotificationEventType;
 import com.upply.common.PageResponse;
 import com.upply.exception.custom.BusinessLogicException;
 import com.upply.exception.custom.OperationNotPermittedException;
@@ -37,6 +38,7 @@ import java.util.UUID;
 
 import static com.upply.config.KafkaConfig.APPLICATION_MATCH_CALC_TOPIC;
 import static com.upply.config.KafkaConfig.NOTIFICATION_EVENTS;
+import static com.upply.common.NotificationEventType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +87,7 @@ public class ApplicationService {
 
         NotificationEvent notificationEvent = new NotificationEvent(
                 UUID.randomUUID().toString(),
-                "JOB_APPLICATION_SUBMITTED",
+                JOB_APPLICATION_SUBMITTED,
                 user.getId(),
                 List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
                 Map.of(
@@ -160,7 +162,7 @@ public class ApplicationService {
 
         NotificationEvent notificationEvent = new NotificationEvent(
                 UUID.randomUUID().toString(),
-                "JOB_APPLICATION_UPDATED",
+                JOB_APPLICATION_UPDATED,
                 application.getApplicant().getId(),
                 List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
                 Map.of(

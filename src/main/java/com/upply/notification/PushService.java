@@ -26,7 +26,6 @@ public class PushService {
                                 .setBody(payload.getBody())
                                 .build())
                         .putData("redirectTO", payload.getRedirectTo() != null ? payload.getRedirectTo() : "")
-                        .putData("eventType", payload.getEventType() != null ? payload.getEventType() : "")
                         .build();
                 String response = FirebaseMessaging.getInstance().send(message);
                 log.info("Push sent successfully | messageId: {}", response);

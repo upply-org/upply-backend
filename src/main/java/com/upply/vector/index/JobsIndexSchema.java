@@ -40,7 +40,7 @@ public class JobsIndexSchema implements IndexSchema {
                 new SearchField("content", SearchFieldDataType.STRING).setSearchable(true),
                 new SearchField("embedding", SearchFieldDataType.collection(SearchFieldDataType.SINGLE))
                         .setSearchable(true)
-                        .setVectorSearchDimensions(768)
+                        .setVectorSearchDimensions(vectorDimensions())
                         .setVectorSearchProfileName(vectorProfile()),
                 new SearchField("metadata", SearchFieldDataType.STRING),
                 new SearchField("meta_jobId", SearchFieldDataType.STRING).setFilterable(true),

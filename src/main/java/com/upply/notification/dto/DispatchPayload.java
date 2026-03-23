@@ -29,5 +29,4 @@ public class DispatchPayload {
     private String title;
     private String body;
     private String redirectTo;
-    private String eventType;
 }
