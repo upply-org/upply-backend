@@ -5,6 +5,7 @@ import com.upply.application.ApplicationRepository;
 import com.upply.application.dto.ApplicationMapper;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
+import com.upply.common.NotificationEventType;
 import com.upply.common.PageResponse;
 import com.upply.exception.custom.BusinessLogicException;
 import com.upply.exception.custom.OperationNotPermittedException;
@@ -83,7 +84,7 @@ public class JobService {
 
         NotificationEvent notificationEvent = new NotificationEvent(
                 UUID.randomUUID().toString(),
-                "JOB_POSTED_SUCCESSFULLY",
+                NotificationEventType.JOB_POSTED_SUCCESSFULLY,
                 savedJob.getPostedBy().getId(),
                 List.of(DispatchPayload.Channel.EMAIL),
                 Map.of(
@@ -310,7 +311,7 @@ public class JobService {
 
         NotificationEvent notificationEvent = new NotificationEvent(
                 UUID.randomUUID().toString(),
-                "JOB_POSTED_SUCCESSFULLY",
+                NotificationEventType.JOB_POSTED_SUCCESSFULLY,
                 savedJob.getPostedBy().getId(),
                 List.of(DispatchPayload.Channel.EMAIL),
                 Map.of(

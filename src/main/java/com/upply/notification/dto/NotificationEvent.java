@@ -1,5 +1,6 @@
 package com.upply.notification.dto;
 
+import com.upply.common.NotificationEventType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class NotificationEvent {
     private String eventId;
-    private String eventType;
+    private NotificationEventType eventType;
     private Long userId;
     @Builder.Default
     private List<DispatchPayload.Channel> channels= new ArrayList<>();

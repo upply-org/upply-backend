@@ -1,0 +1,9 @@
+package com.upply.common;
+
+public enum NotificationEventType {
+    JOB_APPLICATION_SUBMITTED,
+    JOB_APPLICATION_UPDATED,
+    NEW_MATCHED_JOBS,
+    DAILY_JOB_APPLY_REMINDER,
+    JOB_POSTED_SUCCESSFULLY
+}
