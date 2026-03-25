@@ -53,6 +53,11 @@ spring:
     google:
       genai:
         api-key: ${GEMINI_API_KEY}
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
 
   #  data:
 #    redis:
@@ -128,3 +133,12 @@ applicationinsights:
 firebase:
   service:
     account: ${FIREBASE_PRIVATE_KEY}
+
+
+management:
+  tracing:
+    enabled: true
+  otlp:
+    tracing:
+      enabled: true
+      endpoint: https://ingestion.azuremonitor.io/v1/traces

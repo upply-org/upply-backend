@@ -8,17 +8,22 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class AiPromptsConfig {
     @Bean
-    public Resource resumeAnalysisPrompt(){
+    public Resource resumeAnalysisPrompt() {
         return new ClassPathResource("prompts/resume-analysis.st");
     }
 
     @Bean
-    public Resource resumeParserPrompt(){
+    public Resource resumeParserPrompt() {
         return new ClassPathResource("prompts/resume-parser.st");
     }
 
     @Bean
-    public Resource applicationSummaryPrompt(){
-        return  new ClassPathResource("prompts/application-summary.st");
+    public Resource applicationSummaryPrompt() {
+        return new ClassPathResource("prompts/application-summary.st");
+    }
+
+    @Bean
+    public Resource recruiterRag() {
+        return new ClassPathResource("prompts/recruiter-rag.st");
     }
 }

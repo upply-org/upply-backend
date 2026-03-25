@@ -11,4 +11,8 @@ public interface IndexSchema {
     String semanticConfig();
     int vectorDimensions();
     List<SearchField> fields();
+
+    default String semanticKeywordsField() {
+        return null;
+    }
 }

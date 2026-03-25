@@ -2,13 +2,10 @@ package com.upply;
 
 import com.upply.application.ApplicationMatchConsumer;
 import com.upply.application.dto.ApplicationMatchEvent;
-import com.upply.notification.DispatchConsumer;
-import com.upply.notification.NotificationOrchestrator;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
 import com.upply.profile.resume.AzureStorageService;
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;

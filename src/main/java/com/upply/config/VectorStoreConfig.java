@@ -3,6 +3,8 @@ package com.upply.config;
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.search.documents.indexes.SearchIndexClient;
 import com.azure.search.documents.indexes.SearchIndexClientBuilder;
+import com.upply.common.IndexName;
+import com.upply.profile.resume.AzureStorageService;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.azure.AzureVectorStore;
@@ -29,11 +31,11 @@ public class VectorStoreConfig {
                 .credential(new AzureKeyCredential(searchKey))
                 .buildClient();
     }
-    @Bean("jobsVectorStore")
+    @Bean
     public VectorStore jobsVectorStore(SearchIndexClient searchIndexClient,
                                    EmbeddingModel embeddingModel) {
         return AzureVectorStore.builder(searchIndexClient, embeddingModel)
-                .indexName("jobs-index")
+                .indexName(IndexName.JOBS_INDEX)
                 .initializeSchema(false)
                 .filterMetadataFields(List.of(
                         AzureVectorStore.MetadataField.text("jobId"),
@@ -45,5 +47,18 @@ public class VectorStoreConfig {
                         AzureVectorStore.MetadataField.text("status")
                 ))
                 .build();
+    }
+    @Bean
+    public VectorStore resumeVectorStore(SearchIndexClient searchIndexClient,
+                                         EmbeddingModel embeddingModel){
+        return AzureVectorStore.builder(searchIndexClient,embeddingModel)
+                .indexName(IndexName.RESUME_INDEX)
+                .initializeSchema(false)
+                .filterMetadataFields(List.of(
+                        AzureVectorStore.MetadataField.text("applicationId"),
+                        AzureVectorStore.MetadataField.text("jobId"),
+                        AzureVectorStore.MetadataField.text("chunkType"),
+                        AzureVectorStore.MetadataField.text("userId")
+                )).build();
     }
 }
