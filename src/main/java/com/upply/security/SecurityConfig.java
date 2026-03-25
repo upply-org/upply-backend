@@ -62,6 +62,7 @@ public class SecurityConfig {
                         )
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "jobs").permitAll()
+                        .requestMatchers(HttpMethod.GET, "jobs/{id}").permitAll()
                         //Every other endpoint requires authentidcation (a valid JWT token)
                         .anyRequest().authenticated())
 
