@@ -57,11 +57,12 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/jobs/search"
                         )
                         .permitAll()
-
-                        //Every other endpoint requires authentication (a valid JWT token)
+                        .requestMatchers(HttpMethod.GET, "jobs").permitAll()
+                        //Every other endpoint requires authentidcation (a valid JWT token)
                         .anyRequest().authenticated())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
