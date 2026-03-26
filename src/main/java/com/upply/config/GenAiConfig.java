@@ -1,6 +1,10 @@
 package com.upply.config;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -15,11 +19,11 @@ import java.nio.charset.StandardCharsets;
 @Profile("!test")
 public class GenAiConfig {
 
-   private ChatClient build(ChatClient.Builder builder,
-                                Resource prompt,
-                            double temperature,
-                            int maxTokens){
-        try{
+    private ChatClient build(ChatClient.Builder builder,
+                             Resource prompt,
+                             double temperature,
+                             int maxTokens) {
+        try {
             return builder
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
                     .defaultOptions(
@@ -31,34 +35,62 @@ public class GenAiConfig {
                     )
                     .build();
 
-        }catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException("Failed to load resume analysis system prompt", e);
         }
 
-   }
+    }
 
-   @Bean
+    @Bean
     public ChatClient resumeAnalysisChatClient(
             ChatClient.Builder builder,
             @Qualifier("resumeAnalysisPrompt") Resource prompt
-   ){
-       return build(builder, prompt, 0.2, 1024);
-   }
+    ) {
+        return build(builder, prompt, 0.2, 1024);
+    }
 
-   @Bean
+    @Bean
     public ChatClient resumeParserChatClient(
             ChatClient.Builder builder,
             @Qualifier("resumeParserPrompt") Resource prompt
-   ){
-       return build(builder, prompt, 0.0, 3072);
-   }
+    ) {
+        return build(builder, prompt, 0.0, 3072);
+    }
 
-   @Bean
+    @Bean
     public ChatClient applicationSummaryChatClient(
             ChatClient.Builder builder,
             @Qualifier("applicationSummaryPrompt") Resource prompt
-   ){
-       return build(builder, prompt, 0.1, 3072);
-   }
+    ) {
+        return build(builder, prompt, 0.1, 3072);
+    }
 
+    @Bean
+    public ChatClient recruiterRagChatClient(
+            ChatClient.Builder builder,
+            @Qualifier("recruiterRag") Resource prompt,
+            ChatMemory chatMemory) {
+        try {
+            return builder
+                    .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
+                    .defaultOptions(GoogleGenAiChatOptions.builder()
+                            .model("gemini-2.5-flash")
+                            .temperature(0.3)
+                            .maxOutputTokens(65536)
+                            .thinkingBudget(4096)
+                            .build())
+                    .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load recruiter RAG prompt", e);
+        }
+    }
+
+    @Bean
+    public ChatMemory chatMemory(JdbcChatMemoryRepository jdbcChatMemoryRepository) {
+        return MessageWindowChatMemory.builder()
+                .chatMemoryRepository(jdbcChatMemoryRepository)
+                .maxMessages(100)
+                .build();
+    }
 }

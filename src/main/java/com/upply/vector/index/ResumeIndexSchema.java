@@ -8,30 +8,26 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class JobsIndexSchema implements IndexSchema {
+public class ResumeIndexSchema implements IndexSchema {
+
     @Override
     public String indexName() {
-        return IndexName.JOBS_INDEX;
+        return IndexName.RESUME_INDEX;
     }
 
     @Override
     public String vectorProfile() {
-        return "jobs-vector-profile";
+        return "Resume-vector-profile";
     }
 
     @Override
     public String hnswConfig() {
-        return "jobs-hnsw-config";
+        return "resume-hnsw-config";
     }
 
     @Override
     public String semanticConfig() {
-        return "jobs-semantic-config";
-    }
-
-    @Override
-    public String semanticKeywordsField() {
-        return "meta_title";
+        return "resume-semantic-config";
     }
 
     @Override
@@ -49,13 +45,10 @@ public class JobsIndexSchema implements IndexSchema {
                         .setVectorSearchDimensions(vectorDimensions())
                         .setVectorSearchProfileName(vectorProfile()),
                 new SearchField("metadata", SearchFieldDataType.STRING),
+                new SearchField("meta_applicationId", SearchFieldDataType.STRING).setFilterable(true),
                 new SearchField("meta_jobId", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_title", SearchFieldDataType.STRING).setSearchable(true).setFilterable(true),
-                new SearchField("meta_status", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_type", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_seniority", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_model", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_location", SearchFieldDataType.STRING).setFilterable(true)
+                new SearchField("meta_userId", SearchFieldDataType.STRING).setFilterable(true),
+                new SearchField("meta_chunkType", SearchFieldDataType.STRING).setFilterable(true)
         );
     }
 }

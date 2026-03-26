@@ -101,7 +101,7 @@ public class ResumeParserService {
     }
 
 
-    private ParsedResumeResponse callAi(String rawText) {
+    public ParsedResumeResponse callAi(String rawText) {
         return chatClient.prompt()
                 .user("""
                         Extract all structured data from this resume and return JSON.

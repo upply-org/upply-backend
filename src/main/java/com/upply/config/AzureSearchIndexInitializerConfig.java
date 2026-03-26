@@ -74,19 +74,17 @@ public class AzureSearchIndexInitializerConfig {
     }
 
     private SemanticSearch buildSemanticSearch(IndexSchema schema) {
+        SemanticPrioritizedFields prioritizedFields = new SemanticPrioritizedFields()
+                .setContentFields(List.of(new SemanticField("content")));
+
+        if (schema.semanticKeywordsField() != null) {
+            prioritizedFields.setKeywordsFields(List.of(new SemanticField(schema.semanticKeywordsField())));
+        }
+
         return new SemanticSearch()
                 .setDefaultConfigurationName(schema.semanticConfig())
                 .setConfigurations(List.of(
-                        new SemanticConfiguration(
-                                schema.semanticConfig(),
-                                new SemanticPrioritizedFields()
-                                        .setContentFields(List.of(
-                                                new SemanticField("content")
-                                        ))
-                                        .setKeywordsFields(List.of(
-                                                new SemanticField("meta_title")
-                                        ))
-                        )
+                        new SemanticConfiguration(schema.semanticConfig(), prioritizedFields)
                 ));
     }
 

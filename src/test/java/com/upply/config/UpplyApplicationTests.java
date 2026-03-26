@@ -7,6 +7,8 @@ import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -46,5 +48,20 @@ public class UpplyApplicationTests {
     @Bean
     public ChatClient applicationSummaryChatClient(){
         return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public VectorStore resumeVectorStore() {
+        return Mockito.mock(VectorStore.class);
+    }
+
+    @Bean
+    public ChatClient recruiterRagChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatMemory chatMemory() {
+        return Mockito.mock(ChatMemory.class);
     }
 }
