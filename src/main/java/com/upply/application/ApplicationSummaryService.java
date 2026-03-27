@@ -17,70 +17,80 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class ApplicationSummaryService {
-    private final ChatClient chatClient;
+    private final ChatClient groqChatClient;
+    private final ChatClient geminiChatClient;
 
 
     public ApplicationSummaryService(
-            @Qualifier("applicationSummaryChatClient") ChatClient chatClient
-          ) {
-        this.chatClient = chatClient;
+            @Qualifier("applicationSummaryGroqChatClient") ChatClient groqChatClient,
+            @Qualifier("applicationSummaryGeminiChatClient") ChatClient geminiChatclient
+    ) {
+        this.groqChatClient = groqChatClient;
+        this.geminiChatClient = geminiChatclient;
     }
 
 
-    public String callAi(double score, Job job, User jobseeker, String resumeTxt){
-        return chatClient.prompt()
-                .user(buildPrompt(score, job, jobseeker, resumeTxt))
-                .call()
-                .content();
+    public String callAi(double score, Job job, User jobseeker, String resumeTxt) {
+        try {
+            return geminiChatClient.prompt()
+                    .user(buildPrompt(score, job, jobseeker, resumeTxt))
+                    .call()
+                    .content();
+        } catch (Exception e) {
+            return groqChatClient.prompt()
+                    .user(buildPrompt(score, job, jobseeker, resumeTxt))
+                    .call()
+                    .content();
+        }
     }
 
-    private String buildPrompt(double score, Job job, User jobSeeker, String resumeTxt){
+    private String buildPrompt(double score, Job job, User jobSeeker, String resumeTxt) {
         String jobseekerSkills = jobSeeker.getUserSkills().isEmpty()
                 ? "None listed"
                 : jobSeeker.getUserSkills().stream()
-                .map(Skill::getName)
-                .collect(Collectors.joining(", "));
+                  .map(Skill::getName)
+                  .collect(Collectors.joining(", "));
 
         String jobSkills = job.getSkills().isEmpty()
                 ? "None listed"
                 : job.getSkills().stream()
-                .map(Skill::getName)
-                .collect(Collectors.joining(", "));
+                  .map(Skill::getName)
+                  .collect(Collectors.joining(", "));
 
         String experiences = jobSeeker.getExperiences().isEmpty()
                 ? "No experiences listed."
                 : jobSeeker.getExperiences().stream()
-                .map(e -> "- %s at %s (%s → %s)".formatted(
-                        e.getTitle(),
-                        e.getOrganization(),
-                        e.getStartDate()!= null ? e.getStartDate().toString() : "Unknown",
-                        e.getEndDate() != null
-                                ? e.getEndDate().toString()
-                                : "Present"))
-                .collect(Collectors.joining("\n"));
+                  .map(e -> "- %s at %s (%s → %s)".formatted(
+                          e.getTitle(),
+                          e.getOrganization(),
+                          e.getStartDate() != null ? e.getStartDate().toString() : "Unknown",
+                          e.getEndDate() != null
+                          ? e.getEndDate().toString()
+                          : "Present"))
+                  .collect(Collectors.joining("\n"));
 
         return """
                 Explain in one short paragraph why this candidate scored %d%%
                 for the job below.
-
+                
                 == JOB ==
                 Title          : %s
                 Seniority      : %s
                 Required Skills: %s
-
+                
                 == CANDIDATE ==
                 Name           : %s %s
                 Skills         : %s
-
+                
                 Experiences:
                 %s
-
+                
                 Resume Text:
                 \"\"\"
                 %s
                 \"\"\"
                 """.formatted(
-                (int)Math.round(score*100),
+                (int) Math.round(score * 100),
                 job.getTitle(),
                 job.getSeniority(),
                 jobSkills,

@@ -36,6 +36,26 @@ public class UpplyApplicationTests {
     }
 
     @Bean
+    public ChatClient resumeAnalysisGroqChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatClient resumeAnalysisGeminiChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatClient resumeParserGroqChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatClient resumeParserGeminiChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
     public ChatClient resumeAnalysisChatClient() {
         return Mockito.mock(ChatClient.class);
     }
@@ -46,13 +66,28 @@ public class UpplyApplicationTests {
     }
 
     @Bean
-    public ChatClient applicationSummaryChatClient(){
+    public ChatClient applicationSummaryGroqChatClient(){
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatClient applicationSummaryGeminiChatClient(){
         return Mockito.mock(ChatClient.class);
     }
 
     @Bean
     public VectorStore resumeVectorStore() {
         return Mockito.mock(VectorStore.class);
+    }
+
+    @Bean
+    public ChatClient recruiterRagGeminiChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatClient recruiterRagGroqChatClient() {
+        return Mockito.mock(ChatClient.class);
     }
 
     @Bean

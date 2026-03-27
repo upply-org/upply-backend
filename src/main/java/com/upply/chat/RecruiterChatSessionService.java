@@ -1,7 +1,5 @@
 package com.upply.chat;
 
-import com.upply.application.ApplicationRepository;
-import com.upply.application.dto.ApplicationMapper;
 
 import com.upply.chat.dto.ChatMessageResponse;
 import com.upply.chat.dto.CreateSessionRequest;
@@ -12,7 +10,6 @@ import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.job.Job;
 import com.upply.job.JobRepository;
 import com.upply.user.User;
-import com.upply.user.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -35,7 +32,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RecruiterChatSessionService {
     private final VectorStore vectorStore;
-    private final ChatClient chatClient;
+    private final ChatClient geminiChatClient;
+    private final ChatClient groqChatClient;
     private final ChatMemory chatMemory;
     private final RecruiterChatSessionRepository sessionRepository;
     private final RecruiterChatMapper recruiterChatMapper;
@@ -46,13 +44,15 @@ public class RecruiterChatSessionService {
     private static final String NO_CANDIDATES = "No relevant candidates found for this query.";
 
     public RecruiterChatSessionService(@Qualifier("resumeVectorStore") VectorStore vectorStore,
-                                       @Qualifier("recruiterRagChatClient") ChatClient chatClient,
+                                       @Qualifier("recruiterRagGeminiChatClient") ChatClient geminiChatClient,
+                                       @Qualifier("recruiterRagGroqChatClient") ChatClient groqChatClient,
                                        ChatMemory chatMemory,
                                        RecruiterChatSessionRepository sessionRepository,
                                        RecruiterChatMapper recruiterChatMapper,
                                        JobRepository jobRepository) {
         this.vectorStore = vectorStore;
-        this.chatClient = chatClient;
+        this.geminiChatClient = geminiChatClient;
+        this.groqChatClient = groqChatClient;
         this.chatMemory = chatMemory;
         this.sessionRepository = sessionRepository;
         this.jobRepository = jobRepository;
@@ -110,9 +110,40 @@ public class RecruiterChatSessionService {
         RecruiterChatSession session = sessionRepository.findBySessionId(sessionId)
                 .orElseThrow(() -> new ResourceNotFoundException("No Session Found with this id"));
 
-        String candidateCtx = buildCandidateContext(session.getJob().getId(), prompt);
-        String jobCtx = buildJobContext(session.getJob().getId());
-        return chatClient.prompt()
+        Long jobId = session.getJob().getId();
+
+        String candidateCtx = buildCandidateContext(jobId, prompt);
+        String jobCtx = buildJobContext(jobId);
+
+        return callAiStream(geminiChatClient, sessionId, prompt, jobCtx, candidateCtx)
+                .doOnComplete(() -> log.info(
+                        "AI_STREAM_SUCCESS provider=gemini sessionId={} jobId={}",
+                        sessionId, jobId
+                ))
+                .onErrorResume(e -> {
+                        log.warn(
+                                "AI_FALLBACK provider=gemini sessionId={} jobId={} errorType={} message={}",
+                                sessionId,
+                                jobId,
+                                e.getClass().getSimpleName(),
+                                e.getMessage(),
+                                e
+                        );
+
+                        return callAiStream(groqChatClient, sessionId, prompt, jobCtx, candidateCtx)
+                                .doOnSubscribe(s -> log.info(
+                                        "AI_FALLBACK_EXEC provider=groq sessionId={} jobId={}",
+                                        sessionId, jobId
+                                ))
+                                .doOnComplete(() -> log.info(
+                                        "AI_STREAM_SUCCESS provider=groq sessionId={} jobId={}",
+                                        sessionId, jobId
+                                ));
+                });
+    }
+
+    private Flux<String> callAiStream(ChatClient client, String sessionId, String prompt, String jobCtx, String candidateCtx) {
+        return client.prompt()
                 .system(s -> s
                         .param("job_context", jobCtx)
                         .param("candidate_context", candidateCtx)
@@ -120,14 +151,11 @@ public class RecruiterChatSessionService {
                 .user(prompt)
                 .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, sessionId))
                 .stream()
-                .content()
-                .doOnError(e -> log.error(
-                        "Stream failed — session: {}, error: {}", sessionId, e.getMessage()
-                ));
+                .content();
     }
 
     private String buildCandidateContext(Long jobId, String prompt) {
-        log.debug("Searching for candidates with jobId: {}", jobId);
+        log.info("Searching for candidates with jobId: {}", jobId);
 
         List<Document> docs = vectorStore.similaritySearch(
                 SearchRequest.builder()
@@ -138,7 +166,7 @@ public class RecruiterChatSessionService {
                         .build()
         );
 
-        log.debug("Found {} documents for jobId: {}", docs.size(), jobId);
+        log.info("Found {} documents for jobId: {}", docs.size(), jobId);
 
         if (docs.isEmpty()) return NO_CANDIDATES;
 

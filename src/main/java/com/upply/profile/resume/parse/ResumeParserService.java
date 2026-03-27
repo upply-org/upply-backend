@@ -41,7 +41,8 @@ import java.util.Set;
 @Service
 @Slf4j
 public class ResumeParserService {
-    private final ChatClient chatClient;
+    private final ChatClient geminiChatClient;
+    private final ChatClient groqChatClient;
     private final UserRepository userRepository;
     private final ResumeRepository resumeRepository;
     private final AzureStorageService azureStorageService;
@@ -55,7 +56,8 @@ public class ResumeParserService {
     private final SocialLinkMapper socialLinkMapper;
 
     public ResumeParserService(
-            @Qualifier("resumeParserChatClient") ChatClient chatClient,
+            @Qualifier("resumeParserGroqChatClient") ChatClient groqChatClient,
+            @Qualifier("resumeParserGeminiChatClient") ChatClient geminiChatClient,
             UserRepository userRepository,
             ResumeRepository resumeRepository,
             AzureStorageService azureStorageService,
@@ -66,7 +68,8 @@ public class ResumeParserService {
             ExperienceMapper experienceMapper,
             ProjectMapper projectMapper,
             SocialLinkMapper socialLinkMapper) {
-        this.chatClient = chatClient;
+        this.groqChatClient = groqChatClient;
+        this.geminiChatClient = geminiChatClient;
         this.userRepository = userRepository;
         this.resumeRepository = resumeRepository;
         this.azureStorageService = azureStorageService;
@@ -102,18 +105,28 @@ public class ResumeParserService {
 
 
     public ParsedResumeResponse callAi(String rawText) {
-        return chatClient.prompt()
-                .user("""
-                        Extract all structured data from this resume and return JSON.
-                        
-                        Resume:
-                        \"\"\"
-                        %s
-                        \"\"\"
-                        """.formatted(truncate(rawText, 9000)))
-                .call()
-                .entity(ParsedResumeResponse.class);
+        String prompt = """
+                Extract all structured data from this resume and return JSON.
+                
+                Resume:
+                \"\"\"
+                %s
+                \"\"\"
+                """.formatted(truncate(rawText, 9000));
+        try {
+            log.debug("Attempting resume parse with Gemini");
+            return geminiChatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .entity(ParsedResumeResponse.class);
+        } catch (Exception e) {
+            return groqChatClient.prompt()
+                    .user(prompt)
+                    .call()
+                    .entity(ParsedResumeResponse.class);
+        }
     }
+
 
     private void applyPersonal(User user, ParsedResumeResponse parsed) {
         if (isBlank(user.getUniversity()) && parsed.university() != null)
