@@ -28,22 +28,25 @@ import static org.springframework.util.StringUtils.truncate;
 @Service
 @Transactional
 public class ResumeAnalysisService {
-    private final ChatClient chatClient;
+    private final ChatClient groqChatClient;
+    private final ChatClient geminiChatClient;
     private final UserRepository userRepository;
     private final ResumeRepository resumeRepository;
     private final JobRepository jobRepository;
     private final AzureStorageService azureStorageService;
 
     public ResumeAnalysisService(
-            @Qualifier("resumeAnalysisChatClient") ChatClient chatClient,
-            UserRepository      userRepository,
-            ResumeRepository    resumeRepository,
-            JobRepository       jobRepository,
+            @Qualifier("resumeAnalysisGroqChatClient") ChatClient groqchatClient,
+            @Qualifier("resumeAnalysisGeminiChatClient") ChatClient geminiChatClient,
+            UserRepository userRepository,
+            ResumeRepository resumeRepository,
+            JobRepository jobRepository,
             AzureStorageService azureStorageService) {
-        this.chatClient          = chatClient;
-        this.userRepository      = userRepository;
-        this.resumeRepository    = resumeRepository;
-        this.jobRepository       = jobRepository;
+        this.groqChatClient = groqchatClient;
+        this.geminiChatClient = geminiChatClient;
+        this.userRepository = userRepository;
+        this.resumeRepository = resumeRepository;
+        this.jobRepository = jobRepository;
         this.azureStorageService = azureStorageService;
     }
 
@@ -52,36 +55,50 @@ public class ResumeAnalysisService {
      * Response sections: impact, clarity, structure, completeness
      * */
 
-    public ResumeFeedbackResponse analysisProfile(Long resumeId){
+    public ResumeFeedbackResponse analysisProfile(Long resumeId) {
         UserProfileContext ctx = buildUserContext(resumeId);
-        return chatClient.prompt()
-                .user(buildGenericPrompt(ctx))
-                .call()
-                .entity(ResumeFeedbackResponse.class);
+        try {
+            return geminiChatClient.prompt()
+                    .user(buildGenericPrompt(ctx))
+                    .call()
+                    .entity(ResumeFeedbackResponse.class);
+        } catch (Exception e) {
+            return groqChatClient.prompt()
+                    .user(buildGenericPrompt(ctx))
+                    .call()
+                    .entity(ResumeFeedbackResponse.class);
+        }
     }
 
     /**
      * Job-Specific analysis - profile compared against a specific job.
      * Sections:RELEVANCE, SKILLS_ALIGNMENT, EXPERIENCE_LEVEL, IMPACT, CULTURE_FIT
      * */
-    public ResumeFeedbackResponse analysisProfileForJob(Long jobId, Long resumeId){
+    public ResumeFeedbackResponse analysisProfileForJob(Long jobId, Long resumeId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + jobId + " not found"));
         UserProfileContext ctx = buildUserContext(resumeId);
-        return chatClient.prompt()
-                .user(buildJobPrompt(ctx, job))
-                .call()
-                .entity(ResumeFeedbackResponse.class);
+        try {
+            return geminiChatClient.prompt()
+                    .user(buildJobPrompt(ctx, job))
+                    .call()
+                    .entity(ResumeFeedbackResponse.class);
+        } catch (Exception e) {
+            return groqChatClient.prompt()
+                    .user(buildJobPrompt(ctx, job))
+                    .call()
+                    .entity(ResumeFeedbackResponse.class);
+        }
     }
 
-    private UserProfileContext buildUserContext(Long resumeId){
+    private UserProfileContext buildUserContext(Long resumeId) {
         User user = userRepository.getCurrentUser()
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
         String resumeText = resumeRepository.getResumeById(resumeId)
                 .map(resume -> extractTextFromPdf(
                         azureStorageService.downloadFile(resume.getBlobName())
                 ))
-                .orElseThrow(()-> new ResourceNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "No Resume Found"
                 ));
         return new UserProfileContext(user, resumeText);
@@ -90,9 +107,9 @@ public class ResumeAnalysisService {
     private String buildGenericPrompt(UserProfileContext ctx) {
         return """
                 Analyze this candidate's complete profile and return the feedback JSON.
-
+                
                 Sections to score: %s
-
+                
                 %s
                 """.formatted(
                 sectionNames(ResumeSectionGroups.GENERIC_SECTIONS),
@@ -105,11 +122,11 @@ public class ResumeAnalysisService {
                 Analyze this candidate's complete profile against the job posting below.
                 Return the full job-specific feedback JSON including:
                 jobMatchScore, matchedSkills, missingSkills, and topTip.
-
+                
                 Sections to score: %s
-
+                
                 %s
-
+                
                 == JOB POSTING ==
                 Title          : %s
                 Company        : %s
@@ -117,7 +134,7 @@ public class ResumeAnalysisService {
                 Work Model     : %s
                 Location       : %s
                 Required Skills: %s
-
+                
                 Description:
                 \"\"\"
                 %s
@@ -145,46 +162,46 @@ public class ResumeAnalysisService {
         String skills = user.getUserSkills().isEmpty()
                 ? "None listed"
                 : user.getUserSkills().stream()
-                .map(Skill::getName)
-                .collect(Collectors.joining(", "));
+                  .map(Skill::getName)
+                  .collect(Collectors.joining(", "));
 
         String experiences = user.getExperiences().isEmpty()
                 ? "  No experiences added yet."
                 : user.getExperiences().stream()
-                .map(e -> "  - %s at %s (%s → %s)\n    %s".formatted(
-                        e.getTitle(),
-                        e.getOrganization(),
-                        e.getStartDate(),
-                        e.getEndDate() != null
-                                ? e.getEndDate()
-                                : "Present",
-                        e.getDescription()))
-                .collect(Collectors.joining("\n"));
+                  .map(e -> "  - %s at %s (%s → %s)\n    %s".formatted(
+                          e.getTitle(),
+                          e.getOrganization(),
+                          e.getStartDate(),
+                          e.getEndDate() != null
+                          ? e.getEndDate()
+                          : "Present",
+                          e.getDescription()))
+                  .collect(Collectors.joining("\n"));
 
         String projects = user.getProjects().isEmpty()
                 ? "  No projects added yet."
                 : user.getProjects().stream()
-                .map(p -> "  - %s (%s)\n    %s\n    Tech: %s".formatted(
-                        p.getTitle(),
-                        p.getStartDate(),
-                        p.getDescription(),
-                        p.getTechnologies() != null
-                                ? p.getTechnologies()
-                                : "N/A"))
-                .collect(Collectors.joining("\n"));
+                  .map(p -> "  - %s (%s)\n    %s\n    Tech: %s".formatted(
+                          p.getTitle(),
+                          p.getStartDate(),
+                          p.getDescription(),
+                          p.getTechnologies() != null
+                          ? p.getTechnologies()
+                          : "N/A"))
+                  .collect(Collectors.joining("\n"));
 
         return """
                 == CANDIDATE PROFILE ==
                 Name      : %s %s
                 University: %s
                 Skills    : %s
-
+                
                 Experiences:
                 %s
-
+                
                 Projects:
                 %s
-
+                
                 Resume Text:
                 \"\"\"
                 %s
@@ -199,26 +216,28 @@ public class ResumeAnalysisService {
                 truncate(ctx.resumeText(), 2000)
         );
     }
-    private String extractTextFromPdf(byte[] pdfFile){
-        try(PDDocument document = Loader.loadPDF(pdfFile)){
-            if(document.isEncrypted()){
+
+    private String extractTextFromPdf(byte[] pdfFile) {
+        try (PDDocument document = Loader.loadPDF(pdfFile)) {
+            if (document.isEncrypted()) {
                 return "Resume is encrypted and can't be processed - Start analysis based on profile data only";
             }
             PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(document).strip();
 
-            return text.isEmpty()?"Resume text could not be extracted- Start analysis based on profile data only" : text;
-        }catch (IOException e){
+            return text.isEmpty() ? "Resume text could not be extracted- Start analysis based on profile data only" : text;
+        } catch (IOException e) {
             // I don't want fail whole request
             return "Resume text unavailable, Start analysis based on profile data only.";
         }
     }
 
-    private String sectionNames(Set<ResumeSection> sections){
+    private String sectionNames(Set<ResumeSection> sections) {
         return sections.stream()
                 .map(ResumeSection::name)
                 .collect(Collectors.joining(", "));
     }
 
-    private record UserProfileContext(User user, String resumeText){}
+    private record UserProfileContext(User user, String resumeText) {
+    }
 }
