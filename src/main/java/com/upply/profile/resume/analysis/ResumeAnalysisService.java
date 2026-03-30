@@ -5,11 +5,10 @@ import com.upply.job.Job;
 import com.upply.job.JobRepository;
 import com.upply.profile.resume.AzureStorageService;
 import com.upply.profile.resume.ResumeRepository;
-import com.upply.profile.resume.dto.ResumeFeedbackResponse;
+import com.upply.profile.resume.dto.ResumeAnalysisResponse;
 import com.upply.profile.resume.enums.ResumeSection;
 import com.upply.profile.resume.enums.ResumeSectionGroups;
 import com.upply.profile.skill.Skill;
-import com.upply.user.User;
 import com.upply.user.UserRepository;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -51,30 +50,10 @@ public class ResumeAnalysisService {
     }
 
     /**
-     * Generic profile analysis, without job context
-     * Response sections: impact, clarity, structure, completeness
-     * */
-
-    public ResumeFeedbackResponse analysisProfile(Long resumeId) {
-        UserProfileContext ctx = buildUserContext(resumeId);
-        try {
-            return geminiChatClient.prompt()
-                    .user(buildGenericPrompt(ctx))
-                    .call()
-                    .entity(ResumeFeedbackResponse.class);
-        } catch (Exception e) {
-            return groqChatClient.prompt()
-                    .user(buildGenericPrompt(ctx))
-                    .call()
-                    .entity(ResumeFeedbackResponse.class);
-        }
-    }
-
-    /**
-     * Job-Specific analysis - profile compared against a specific job.
+     * Job-Specific analysis - resume compared against a specific job.
      * Sections:RELEVANCE, SKILLS_ALIGNMENT, EXPERIENCE_LEVEL, IMPACT, CULTURE_FIT
      * */
-    public ResumeFeedbackResponse analysisProfileForJob(Long jobId, Long resumeId) {
+    public ResumeAnalysisResponse analysisResumeForJob(Long jobId, Long resumeId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + jobId + " not found"));
         UserProfileContext ctx = buildUserContext(resumeId);
@@ -82,18 +61,16 @@ public class ResumeAnalysisService {
             return geminiChatClient.prompt()
                     .user(buildJobPrompt(ctx, job))
                     .call()
-                    .entity(ResumeFeedbackResponse.class);
+                    .entity(ResumeAnalysisResponse.class);
         } catch (Exception e) {
             return groqChatClient.prompt()
                     .user(buildJobPrompt(ctx, job))
                     .call()
-                    .entity(ResumeFeedbackResponse.class);
+                    .entity(ResumeAnalysisResponse.class);
         }
     }
 
     private UserProfileContext buildUserContext(Long resumeId) {
-        User user = userRepository.getCurrentUser()
-                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
         String resumeText = resumeRepository.getResumeById(resumeId)
                 .map(resume -> extractTextFromPdf(
                         azureStorageService.downloadFile(resume.getBlobName())
@@ -101,25 +78,12 @@ public class ResumeAnalysisService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No Resume Found"
                 ));
-        return new UserProfileContext(user, resumeText);
-    }
-
-    private String buildGenericPrompt(UserProfileContext ctx) {
-        return """
-                Analyze this candidate's complete profile and return the feedback JSON.
-                
-                Sections to score: %s
-                
-                %s
-                """.formatted(
-                sectionNames(ResumeSectionGroups.GENERIC_SECTIONS),
-                formatProfile(ctx)
-        );
+        return new UserProfileContext(resumeText);
     }
 
     private String buildJobPrompt(UserProfileContext ctx, Job job) {
         return """
-                Analyze this candidate's complete profile against the job posting below.
+                Analyze this candidate's resume against the job posting below.
                 Return the full job-specific feedback JSON including:
                 jobMatchScore, matchedSkills, missingSkills, and topTip.
                 
@@ -157,63 +121,14 @@ public class ResumeAnalysisService {
 
 
     private String formatProfile(UserProfileContext ctx) {
-        User user = ctx.user();
-
-        String skills = user.getUserSkills().isEmpty()
-                ? "None listed"
-                : user.getUserSkills().stream()
-                  .map(Skill::getName)
-                  .collect(Collectors.joining(", "));
-
-        String experiences = user.getExperiences().isEmpty()
-                ? "  No experiences added yet."
-                : user.getExperiences().stream()
-                  .map(e -> "  - %s at %s (%s → %s)\n    %s".formatted(
-                          e.getTitle(),
-                          e.getOrganization(),
-                          e.getStartDate(),
-                          e.getEndDate() != null
-                          ? e.getEndDate()
-                          : "Present",
-                          e.getDescription()))
-                  .collect(Collectors.joining("\n"));
-
-        String projects = user.getProjects().isEmpty()
-                ? "  No projects added yet."
-                : user.getProjects().stream()
-                  .map(p -> "  - %s (%s)\n    %s\n    Tech: %s".formatted(
-                          p.getTitle(),
-                          p.getStartDate(),
-                          p.getDescription(),
-                          p.getTechnologies() != null
-                          ? p.getTechnologies()
-                          : "N/A"))
-                  .collect(Collectors.joining("\n"));
-
         return """
-                == CANDIDATE PROFILE ==
-                Name      : %s %s
-                University: %s
-                Skills    : %s
-                
-                Experiences:
-                %s
-                
-                Projects:
-                %s
-                
+                == CANDIDATE PROFILE == 
                 Resume Text:
                 \"\"\"
                 %s
                 \"\"\"
                 """.formatted(
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUniversity() != null ? user.getUniversity() : "N/A",
-                skills,
-                experiences,
-                projects,
-                truncate(ctx.resumeText(), 2000)
+                ctx.resumeText()
         );
     }
 
@@ -238,6 +153,6 @@ public class ResumeAnalysisService {
                 .collect(Collectors.joining(", "));
     }
 
-    private record UserProfileContext(User user, String resumeText) {
+    private record UserProfileContext(String resumeText) {
     }
 }

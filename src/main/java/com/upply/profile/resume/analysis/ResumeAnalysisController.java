@@ -1,6 +1,6 @@
 package com.upply.profile.resume.analysis;
 
-import com.upply.profile.resume.dto.ResumeFeedbackResponse;
+import com.upply.profile.resume.dto.ResumeAnalysisResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,27 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class ResumeAnalysisController {
     private final ResumeAnalysisService resumeAnalysisService;
 
-    @GetMapping("/{resumeId}")
-    @Operation(
-            summary = "Get resume feedback",
-            description = "Analyzes the specified resume of the authenticated user and returns AI-generated feedback and recommendations."
-    )
-    public ResponseEntity<ResumeFeedbackResponse> getResumeFeedback(
-            @Parameter(
-                    description = "The ID of the resume to analyze",
-                    required = true,
-                    example = "1"
-            )
-            @PathVariable Long resumeId){
-        return ResponseEntity.ok(resumeAnalysisService.analysisProfile(resumeId));
-    }
 
     @GetMapping("/{resumeId}/job/{jobId}")
     @Operation(
             summary = "Get resume feedback for specific job",
             description = "Analyzes how well the specified resume matches a given job posting and returns targeted feedback and match insights."
     )
-    public ResponseEntity<ResumeFeedbackResponse> getResumeFeedbackForJob(
+    public ResponseEntity<ResumeAnalysisResponse> getResumeFeedbackForJob(
             @Parameter(
                     description = "The ID of the resume to analyze",
                     required = true,
@@ -52,6 +38,6 @@ public class ResumeAnalysisController {
             )
             @PathVariable Long jobId
     ){
-        return ResponseEntity.ok(resumeAnalysisService.analysisProfileForJob(jobId,resumeId));
+        return ResponseEntity.ok(resumeAnalysisService.analysisResumeForJob(jobId,resumeId));
     }
 }
