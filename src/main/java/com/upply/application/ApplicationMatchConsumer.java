@@ -83,7 +83,7 @@ public class ApplicationMatchConsumer {
             application.setMatchingRatio(score);
 
             try {
-                String summary = applicationSummaryService.callAi(score, job, user, resumeTxt);
+                String summary = applicationSummaryService.callAi(score, job, resumeTxt);
                 application.setSummary(summary);
             } catch (Exception ex) {
                 log.warn("AI summary generation failed for applicationId: {}, proceeding without summary", application.getId(), ex);

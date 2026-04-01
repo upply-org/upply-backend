@@ -32,7 +32,7 @@ public class ResumeIndexSchema implements IndexSchema {
 
     @Override
     public int vectorDimensions() {
-        return 768;
+        return 384;
     }
 
     @Override
