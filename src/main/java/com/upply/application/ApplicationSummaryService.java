@@ -30,76 +30,44 @@ public class ApplicationSummaryService {
     }
 
 
-    public String callAi(double score, Job job, User jobseeker, String resumeTxt) {
+    public String callAi(double score, Job job, String resumeTxt) {
         try {
             return geminiChatClient.prompt()
-                    .user(buildPrompt(score, job, jobseeker, resumeTxt))
+                    .user(buildPrompt(score, job, resumeTxt))
                     .call()
                     .content();
         } catch (Exception e) {
             return groqChatClient.prompt()
-                    .user(buildPrompt(score, job, jobseeker, resumeTxt))
+                    .user(buildPrompt(score, job, resumeTxt))
                     .call()
                     .content();
         }
     }
 
-    private String buildPrompt(double score, Job job, User jobSeeker, String resumeTxt) {
-        String jobseekerSkills = jobSeeker.getUserSkills().isEmpty()
-                ? "None listed"
-                : jobSeeker.getUserSkills().stream()
-                  .map(Skill::getName)
-                  .collect(Collectors.joining(", "));
+    private String buildPrompt(double score, Job job, String resumeTxt) {
+
 
         String jobSkills = job.getSkills().isEmpty()
                 ? "None listed"
                 : job.getSkills().stream()
                   .map(Skill::getName)
                   .collect(Collectors.joining(", "));
-
-        String experiences = jobSeeker.getExperiences().isEmpty()
-                ? "No experiences listed."
-                : jobSeeker.getExperiences().stream()
-                  .map(e -> "- %s at %s (%s → %s)".formatted(
-                          e.getTitle(),
-                          e.getOrganization(),
-                          e.getStartDate() != null ? e.getStartDate().toString() : "Unknown",
-                          e.getEndDate() != null
-                          ? e.getEndDate().toString()
-                          : "Present"))
-                  .collect(Collectors.joining("\n"));
-
         return """
-                Explain in one short paragraph why this candidate scored %d%%
-                for the job below.
-                
                 == JOB ==
                 Title          : %s
                 Seniority      : %s
                 Required Skills: %s
                 
                 == CANDIDATE ==
-                Name           : %s %s
-                Skills         : %s
-                
-                Experiences:
-                %s
-                
                 Resume Text:
                 \"\"\"
                 %s
                 \"\"\"
                 """.formatted(
-                (int) Math.round(score * 100),
                 job.getTitle(),
                 job.getSeniority(),
                 jobSkills,
-                jobSeeker.getFirstName(),
-                jobSeeker.getLastName(),
-                jobseekerSkills
-                ,
-                experiences,
-                truncate(resumeTxt, 9000)
+                truncate(resumeTxt, 12000)
         );
     }
 
@@ -113,10 +81,8 @@ public class ApplicationSummaryService {
             return "Resume text unavailable.";
         }
     }
-
     private String truncate(String text, int max) {
         if (text == null || text.isBlank()) return "";
         return text.length() <= max ? text : text.substring(0, max) + "…";
     }
-
 }

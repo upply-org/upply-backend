@@ -47,9 +47,9 @@ spring:
           enabled: true
           directory: /tmp/spring-ai-onnx-model
         tokenizer:
-          uri: https://huggingface.co/BAAI/bge-base-en-v1.5/resolve/main/tokenizer.json
+          uri: https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/main/tokenizer.json
         onnx:
-          model-uri: https://huggingface.co/BAAI/bge-base-en-v1.5/resolve/main/onnx/model.onnx
+          model-uri: https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/main/onnx/model.onnx
     google:
       genai:
         api-key: ${GEMINI_API_KEY}

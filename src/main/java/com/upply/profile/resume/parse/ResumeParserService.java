@@ -112,7 +112,7 @@ public class ResumeParserService {
                 \"\"\"
                 %s
                 \"\"\"
-                """.formatted(truncate(rawText, 9000));
+                """.formatted(truncate(rawText, 12000));
         try {
             log.debug("Attempting resume parse with Gemini");
             return geminiChatClient.prompt()

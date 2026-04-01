@@ -17,7 +17,9 @@ public record ParsedResumeResponse(
         List<String> skills,
         List<SocialLinkRequest> socialLinks,
         // true if the text appears truncated or incomplete.
-        boolean partialExtraction
+        boolean partialExtraction,
+        String extractionQuality,
+        String extractionWarning
 ) {
     public ParsedResumeResponse {
         experiences = experiences == null ? List.of()
