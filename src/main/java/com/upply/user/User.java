@@ -1,6 +1,7 @@
 package com.upply.user;
 
 
+import com.upply.organization.Organization;
 import com.upply.profile.experience.Experience;
 import com.upply.job.Job;
 import com.upply.profile.project.Project;
@@ -85,6 +86,10 @@ public class User implements UserDetails, Principal {
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
     private Set<Job> userBookmarkedJobs = new HashSet<>();
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
