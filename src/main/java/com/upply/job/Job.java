@@ -4,6 +4,7 @@ import com.upply.job.enums.JobModel;
 import com.upply.job.enums.JobSeniority;
 import com.upply.job.enums.JobStatus;
 import com.upply.job.enums.JobType;
+import com.upply.organization.Organization;
 import com.upply.profile.skill.Skill;
 import com.upply.user.User;
 import jakarta.persistence.*;
@@ -67,5 +68,7 @@ public class Job {
     private Instant createdDate;
 
 
-    // TODO: Organization Relationship
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
 }
