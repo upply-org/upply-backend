@@ -7,6 +7,7 @@ public class NormalizeSkillName {
             return null;
         }
 
-        return skillName.toLowerCase().replaceAll("\\s+", "");
+        return skillName.toLowerCase()
+                .replaceAll("[\\s.\\-_/]", "");
     }
 }
