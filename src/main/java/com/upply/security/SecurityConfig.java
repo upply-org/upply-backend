@@ -111,7 +111,7 @@ public class SecurityConfig {
 
         // Allow HTTP methods
         config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                "GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"
         ));
 
         // Allow all headers
