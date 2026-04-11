@@ -1,9 +1,6 @@
 package com.upply.job;
 
-import com.upply.job.enums.JobModel;
-import com.upply.job.enums.JobSeniority;
-import com.upply.job.enums.JobStatus;
-import com.upply.job.enums.JobType;
+import com.upply.job.enums.*;
 import com.upply.organization.Organization;
 import com.upply.profile.skill.Skill;
 import com.upply.user.User;
@@ -42,6 +39,7 @@ public class Job {
     private JobType type;        // (full-time, part-time, internship)
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private JobSeniority seniority;   // (junior/mid/senior/lead)
 
     @Enumerated(EnumType.STRING)
@@ -50,7 +48,13 @@ public class Job {
     @Enumerated(EnumType.STRING)
     private JobStatus status;  // (open, paused, closed)
 
+    @Enumerated(EnumType.STRING)
+    private JobSource source; // (internal, external)
+
     private String location;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
     private String description;
 
     @ManyToMany
@@ -71,4 +75,6 @@ public class Job {
     @ManyToOne
     @JoinColumn(name = "organization_id")
     private Organization organization;
+
+    private String organizationName;
 }

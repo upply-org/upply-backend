@@ -66,6 +66,16 @@ public class UpplyApplicationTests {
     }
 
     @Bean
+    public ChatClient jobImportGeminiChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
+    public ChatClient jobImportGroqChatClient() {
+        return Mockito.mock(ChatClient.class);
+    }
+
+    @Bean
     public ChatClient applicationSummaryGroqChatClient(){
         return Mockito.mock(ChatClient.class);
     }

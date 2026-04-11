@@ -2,6 +2,7 @@ package com.upply.job.dto;
 
 import com.upply.job.enums.JobModel;
 import com.upply.job.enums.JobSeniority;
+import com.upply.job.enums.JobSource;
 import com.upply.job.enums.JobStatus;
 import com.upply.job.enums.JobType;
 import com.upply.profile.skill.dto.SkillResponse;
@@ -24,6 +25,7 @@ public class JobResponse {
     private String seniority;
     private String model;
     private String status;
+    private String jobSource;
 
     private String location;
     private String description;

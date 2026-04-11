@@ -1,6 +1,5 @@
 package com.upply;
 
-import com.upply.application.ApplicationMatchConsumer;
 import com.upply.application.dto.ApplicationMatchEvent;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
@@ -13,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 
 @SpringBootTest
@@ -22,18 +21,16 @@ import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 @Import(com.upply.config.UpplyApplicationTests.class)
 class UpplyApplicationTests {
 
-	@MockitoBean
+	@MockBean
 	@Qualifier("jobsVectorStore")
 	private VectorStore vectorStore;
-	@MockitoBean
+	@MockBean
 	private AzureStorageService azureStorageService;
-	@MockitoBean
-	private ApplicationMatchConsumer applicationMatchConsumer;
-	@MockitoBean
+	@MockBean
 	private KafkaTemplate<String, ApplicationMatchEvent> kafkaTemplate;
-	@MockitoBean
+	@MockBean
 	private KafkaTemplate<String, NotificationEvent> notificationEventKafkaTemplate;
-	@MockitoBean
+	@MockBean
 	private KafkaTemplate<String, DispatchPayload> dispatchKafkaTemplate;
 	@Test
 	void contextLoads() {

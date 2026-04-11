@@ -91,6 +91,16 @@ public class GenAiConfig {
     }
 
     @Bean
+    public ChatClient jobImportGeminiChatClient(@Qualifier("jobImportPrompt") Resource prompt) {
+        return geminiBuild(prompt, 0.0, 2048);
+    }
+
+    @Bean
+    public ChatClient jobImportGroqChatClient(@Qualifier("jobImportPrompt") Resource prompt) {
+        return groqBuild(prompt, 0.0, 2048);
+    }
+
+    @Bean
     public ChatClient recruiterRagGeminiChatClient(
             @Qualifier("recruiterRag") Resource prompt,
             ChatMemory chatMemory) {

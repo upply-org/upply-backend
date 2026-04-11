@@ -26,4 +26,9 @@ public class AiPromptsConfig {
     public Resource recruiterRag() {
         return new ClassPathResource("prompts/recruiter-rag.st");
     }
+
+    @Bean
+    public Resource jobImportPrompt() {
+        return new ClassPathResource("prompts/job-import.st");
+    }
 }

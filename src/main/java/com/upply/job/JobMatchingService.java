@@ -73,11 +73,11 @@ public class JobMatchingService {
                     Map.of(
                             "jobId", String.valueOf(job.getId()),
                             "title", job.getTitle(),
-                            "type", job.getType().name(),
-                            "seniority", job.getSeniority().name(),
-                            "model", job.getModel().name(),
+                            "type", job.getType() != null ? job.getType().name() : "",
+                            "seniority", job.getSeniority() != null ? job.getSeniority().name() : "",
+                            "model", job.getModel() != null ? job.getModel().name() : "",
                             "location", job.getLocation() != null ? job.getLocation() : "",
-                            "status", job.getStatus().name()
+                            "status", job.getStatus() != null ? job.getStatus().name() : ""
                     )
             );
 
