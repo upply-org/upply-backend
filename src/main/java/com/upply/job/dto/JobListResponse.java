@@ -1,6 +1,7 @@
 package com.upply.job.dto;
 
 
+import com.upply.job.enums.JobSource;
 import lombok.*;
 
 import java.time.Instant;
@@ -19,6 +20,7 @@ public class JobListResponse {
     private String seniority;
     private String model;
     private String status;
+    private String jobSource;
 
     private String location;
 

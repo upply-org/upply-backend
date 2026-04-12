@@ -1,27 +1,21 @@
 package com.upply.job.enums;
 
-public enum JobSeniority {
+public enum JobSource {
 
-    INTERN,
-    JUNIOR,
-    MID,
-    SENIOR,
-    LEAD,
-    MANAGER
+    INTERNAL, // posted by recruiter in the platform
+    EXTERNAL  // imported by admins from job description text
     ;
 
-    // response to entity
-    public static JobSeniority fromApiValue(String value) {
+    public static JobSource fromApiValue(String value) {
         if (value == null) {
             throw new IllegalArgumentException("Value cannot be null");
         }
 
-        return JobSeniority.valueOf(
+        return JobSource.valueOf(
                 value.trim().toUpperCase().replace("-", "_")
         );
     }
 
-    // entity to response
     public String toApiValue() {
         return name().toLowerCase().replace("_", "-");
     }

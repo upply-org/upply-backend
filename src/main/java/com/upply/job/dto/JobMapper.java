@@ -3,6 +3,7 @@ package com.upply.job.dto;
 import com.upply.job.Job;
 import com.upply.job.enums.JobModel;
 import com.upply.job.enums.JobSeniority;
+import com.upply.job.enums.JobSource;
 import com.upply.job.enums.JobStatus;
 import com.upply.job.enums.JobType;
 import com.upply.profile.skill.Skill;
@@ -23,7 +24,7 @@ public class JobMapper {
 
         return Job.builder()
                 .title(request.getTitle())
-
+                .source(JobSource.INTERNAL)
                 .type(JobType.fromApiValue(request.getType()))
                 .seniority(JobSeniority.fromApiValue(request.getSeniority()))
                 .model(JobModel.fromApiValue(request.getModel()))
@@ -41,12 +42,13 @@ public class JobMapper {
         return JobResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
-                .organizationName("organizationName")
+                .organizationName(job.getOrganizationName())
 
-                .type(job.getType().toApiValue())
-                .seniority(job.getSeniority().toApiValue())
-                .model(job.getModel().toApiValue())
-                .status(job.getStatus().toApiValue())
+                .type(job.getType() != null ? job.getType().toApiValue() : null)
+                .seniority(job.getSeniority() != null ? job.getSeniority().toApiValue() : null)
+                .model(job.getModel() != null ? job.getModel().toApiValue() : null)
+                .status(job.getStatus() != null ? job.getStatus().toApiValue() : null)
+                .jobSource(job.getSource() != null ? job.getSource().toApiValue() : null)
 
                 .location(job.getLocation())
                 .description(job.getDescription())
@@ -65,12 +67,13 @@ public class JobMapper {
         return JobListResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
-                .organizationName("organizationName")
+                .organizationName(job.getOrganizationName())
 
-                .type(job.getType().toApiValue())
-                .seniority(job.getSeniority().toApiValue())
-                .model(job.getModel().toApiValue())
-                .status(job.getStatus().toApiValue())
+                .type(job.getType() != null ? job.getType().toApiValue() : null)
+                .seniority(job.getSeniority() != null ? job.getSeniority().toApiValue() : null)
+                .model(job.getModel() != null ? job.getModel().toApiValue() : null)
+                .status(job.getStatus() != null ? job.getStatus().toApiValue() : null)
+                .jobSource(job.getSource() != null ? job.getSource().toApiValue() : null)
 
                 .location(job.getLocation())
                 .createdDate(job.getCreatedDate())
@@ -82,12 +85,13 @@ public class JobMapper {
         return MatchedJobListResponse.builder()
                 .id(job.getId())
                 .title(job.getTitle())
-                .organizationName("organizationName")
+                .organizationName(job.getOrganizationName())
 
-                .type(job.getType().toApiValue())
-                .seniority(job.getSeniority().toApiValue())
-                .model(job.getModel().toApiValue())
-                .status(job.getStatus().toApiValue())
+                .type(job.getType() != null ? job.getType().toApiValue() : null)
+                .seniority(job.getSeniority() != null ? job.getSeniority().toApiValue() : null)
+                .model(job.getModel() != null ? job.getModel().toApiValue() : null)
+                .status(job.getStatus() != null ? job.getStatus().toApiValue() : null)
+                .jobSource(job.getSource() != null ? job.getSource().toApiValue() : null)
 
                 .location(job.getLocation())
                 .createdDate(job.getCreatedDate())

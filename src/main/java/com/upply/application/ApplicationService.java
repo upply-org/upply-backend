@@ -12,6 +12,7 @@ import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.job.Job;
 import com.upply.job.JobRepository;
+import com.upply.job.enums.JobSource;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
 import com.upply.profile.resume.AzureStorageService;
@@ -62,6 +63,10 @@ public class ApplicationService {
         Job job = jobRepository.findById(applicationRequest.jobId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Job with ID " + applicationRequest.jobId() + " not found"));
+
+        if (job.getSource() == JobSource.EXTERNAL) {
+            throw new OperationNotPermittedException("Cannot apply to external jobs");
+        }
 
         boolean alreadyApplied = applicationRepository.existsApplicationByApplicantAndJob(user, job);
         if (alreadyApplied) {
