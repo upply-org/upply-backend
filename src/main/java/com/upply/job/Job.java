@@ -77,4 +77,6 @@ public class Job {
     private Organization organization;
 
     private String organizationName;
+
+    private String applicationLink;
 }

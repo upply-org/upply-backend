@@ -59,6 +59,7 @@ public class JobMapper {
                                 .map(skillMapper::toSkillResponse)
                                 .collect(Collectors.toSet())
                 )
+                .applicationLink(job.getApplicationLink())
                 .build();
     }
 

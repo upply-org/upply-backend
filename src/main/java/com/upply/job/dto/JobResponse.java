@@ -1,10 +1,5 @@
 package com.upply.job.dto;
 
-import com.upply.job.enums.JobModel;
-import com.upply.job.enums.JobSeniority;
-import com.upply.job.enums.JobSource;
-import com.upply.job.enums.JobStatus;
-import com.upply.job.enums.JobType;
 import com.upply.profile.skill.dto.SkillResponse;
 import lombok.*;
 
@@ -31,5 +26,5 @@ public class JobResponse {
     private String description;
     private Instant createdDate;
     private Set<SkillResponse> skills;
+    private String applicationLink;
 }
-
