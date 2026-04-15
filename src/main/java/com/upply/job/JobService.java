@@ -1,13 +1,10 @@
 package com.upply.job;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upply.application.Application;
 import com.upply.application.ApplicationRepository;
 import com.upply.application.dto.ApplicationMapper;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
-import com.upply.common.NormalizeSkillName;
 import com.upply.common.NotificationEventType;
 import com.upply.common.PageResponse;
 import com.upply.exception.custom.BusinessLogicException;
@@ -17,13 +14,13 @@ import com.upply.job.dto.*;
 import com.upply.job.enums.*;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
+import com.upply.job.dto.ParsedJobResponse;
 import com.upply.profile.skill.Skill;
 import com.upply.profile.skill.SkillRepository;
 import com.upply.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -58,8 +55,7 @@ public class JobService {
     private final ApplicationExcelExportService applicationExcelExportService;
     private final ExportTaskMapper exportTaskMapper;
     private final KafkaTemplate<String, NotificationEvent> notificationKafkaTemplate;
-    private final ChatClient jobImportGeminiChatClient;
-    private final ChatClient jobImportGroqChatClient;
+    private final JobParserService jobParserService;
     //TODO: use key-value database like redis!!
     private final Map<String, ExportTask> exportTasks = new ConcurrentHashMap<>();
     @Value("${app.export.task-expire-seconds}")
@@ -118,105 +114,32 @@ public class JobService {
     @Transactional
     public JobResponse importExternalJob(ImportJobRequest request, Authentication connectedUser) {
 
-        String prompt = "Parse this job description and return JSON:\n\n" + request.getDescriptionText();
+        ParsedJobResponse parsed = jobParserService.parse(request.getDescriptionText());
 
-        String aiResponse;
-        try {
-            aiResponse = jobImportGeminiChatClient.prompt()
-                    .user(prompt)
-                    .call()
-                    .content();
-        } catch (Exception e) {
-            log.warn("Gemini failed, trying Groq: {}", e.getMessage());
-            try {
-                aiResponse = jobImportGroqChatClient.prompt()
-                        .user(prompt)
-                        .call()
-                        .content();
-            } catch (Exception ex) {
-                throw new BusinessLogicException("Failed to parse job description: " + ex.getMessage());
-            }
+        if(parsed.title() == null || parsed.title().isBlank()){
+            throw new BusinessLogicException("Could not extract job title from description");
         }
 
-        String jsonStr = aiResponse.trim();
-        if (jsonStr.startsWith("```json")) {
-            jsonStr = jsonStr.replace("```json", "").replace("```", "").trim();
-        } else if (jsonStr.startsWith("```")) {
-            jsonStr = jsonStr.replace("```", "").trim();
-        }
+        JobType      type      = jobParserService.resolveType(parsed.type());
+        JobSeniority seniority = jobParserService.resolveSeniority(parsed.seniority());
+        JobModel     model     = jobParserService.resolveModel(parsed.model());
 
-        JsonNode node;
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            node = mapper.readTree(jsonStr);
-        } catch (Exception e) {
-            throw new BusinessLogicException("Failed to parse AI response: " + e.getMessage());
-        }
+        Set<Skill> skills = jobParserService.resolveSkills(parsed.skills());
 
-        String title = node.has("title") && !node.get("title").isNull() ? node.get("title").asText() : null;
-        String typeStr = node.has("type") && !node.get("type").isNull() ? node.get("type").asText() : null;
-        String seniorityStr = node.has("seniority") && !node.get("seniority").isNull() ? node.get("seniority").asText() : null;
-        String modelStr = node.has("model") && !node.get("model").isNull() ? node.get("model").asText() : null;
-        String location = node.has("location") && !node.get("location").isNull() ? node.get("location").asText() : null;
-        String description = node.has("description") && !node.get("description").isNull() ? node.get("description").asText() : null;
-        String organizationName = node.has("organization") && !node.get("organization").isNull() ? node.get("organization").asText() : null;
-
-        JobType type = null;
-        if (typeStr != null) {
-            try {
-                type = JobType.fromApiValue(typeStr);
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid job type '{}', setting to null. Valid values: {}", typeStr, Arrays.toString(JobType.values()));
-            }
-        }
-
-        JobSeniority seniority = null;
-        if (seniorityStr != null) {
-            try {
-                seniority = JobSeniority.fromApiValue(seniorityStr);
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid job seniority '{}', setting to null. Valid values: {}", seniorityStr, Arrays.toString(JobSeniority.values()));
-            }
-        }
-
-        JobModel model = null;
-        if (modelStr != null) {
-            try {
-                model = JobModel.fromApiValue(modelStr);
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid job model '{}', setting to null. Valid values: {}", modelStr, Arrays.toString(JobModel.values()));
-            }
-        }
-
-        Set<Skill> skills = new HashSet<>();
-        if (node.has("skills") && node.get("skills").isArray()) {
-            node.get("skills").forEach(skillNode -> {
-                String skillName = skillNode.asText();
-                String normalizedName = NormalizeSkillName.normalizeSkill(skillName);
-
-                Skill skill = skillRepository.findSkillByName(normalizedName)
-                        .orElseGet(() -> {
-                            Skill newSkill = Skill.builder()
-                                    .name(skillName)
-                                    .searchName(normalizedName)
-                                    .build();
-                            return skillRepository.save(newSkill);
-                        });
-                skills.add(skill);
-            });
-        }
+        String applicationLink = parsed.applicationLink();
 
         Job job = Job.builder()
-                .title(title)
+                .title(parsed.title())
                 .type(type)
                 .seniority(seniority)
                 .model(model)
                 .status(JobStatus.OPEN)
                 .source(JobSource.EXTERNAL)
-                .location(location)
-                .description(description != null ? description : request.getDescriptionText())
+                .location(parsed.location())
+                .description(parsed.description())
+                .organizationName(parsed.organization())
+                .applicationLink(applicationLink)
                 .skills(skills)
-                .organizationName(organizationName)
                 .build();
 
         User user = (User) connectedUser.getPrincipal();
