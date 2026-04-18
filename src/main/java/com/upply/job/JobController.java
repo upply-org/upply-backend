@@ -42,7 +42,8 @@ public class JobController {
             description = "Creates a job by parsing raw job description text using AI. The text is analyzed and structured into job fields (title, description, requirements, etc.). Requires authentication."
     )
     public ResponseEntity<JobResponse> importJob(@Valid @RequestBody ImportJobRequest request, Authentication connectedUser) {
-        return ResponseEntity.ok(jobService.importExternalJob(request, connectedUser));
+        jobService.importExternalJob(request, connectedUser);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @GetMapping("/{id}")

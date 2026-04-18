@@ -7,6 +7,7 @@ import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
 import com.upply.common.NotificationEventType;
 import com.upply.common.PageResponse;
+import com.upply.config.KafkaConfig;
 import com.upply.exception.custom.BusinessLogicException;
 import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.exception.custom.ResourceNotFoundException;
@@ -58,6 +59,7 @@ public class JobService {
     private final JobParserService jobParserService;
     //TODO: use key-value database like redis!!
     private final Map<String, ExportTask> exportTasks = new ConcurrentHashMap<>();
+    private final KafkaTemplate<String, PostJobEvent> postJobEventKafkaTemplate;
     @Value("${app.export.task-expire-seconds}")
     private int TASK_EXPIRE_TIME;
 
@@ -78,30 +80,20 @@ public class JobService {
 
         Job savedJob = jobRepository.save(job);
 
-        // Store job embedding
-        jobMatchingService.storeJobEmbedding(savedJob);
-
-        NotificationEvent notificationEvent = new NotificationEvent(
-                UUID.randomUUID().toString(),
-                NotificationEventType.JOB_POSTED_SUCCESSFULLY,
-                savedJob.getPostedBy().getId(),
-                List.of(DispatchPayload.Channel.EMAIL),
-                Map.of(
-                        "jobTitle",  savedJob.getTitle(),
-                        "jobType",   savedJob.getType().name(),
-                        "seniority", savedJob.getSeniority().name(),
-                        "location",  savedJob.getLocation() != null ? savedJob.getLocation() : "Remote",
-                        "jobUrl",    "TODO" + savedJob.getId() //TODO
-                )
+        PostJobEvent postJobEvent = new PostJobEvent(
+                job.getId(),
+                JobSource.INTERNAL,
+                null,
+                null
         );
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                notificationKafkaTemplate.send(NOTIFICATION_EVENTS,
-                                String.valueOf(savedJob.getId()), notificationEvent)
+                postJobEventKafkaTemplate.send(KafkaConfig.JOB_POSTING_TOPIC,
+                                String.valueOf(savedJob.getId()), postJobEvent)
                         .exceptionally(ex -> {
-                            log.error("Failed to publish submission notification for application {}",
+                            log.error("Failed to publish job posting event for job {}",
                                     savedJob.getId(), ex);
                             return null;
                         });
@@ -111,49 +103,22 @@ public class JobService {
         return jobMapper.toJobResponse(savedJob);
     }
 
-    @Transactional
-    public JobResponse importExternalJob(ImportJobRequest request, Authentication connectedUser) {
-
-        ParsedJobResponse parsed = jobParserService.parse(request.getDescriptionText());
-
-        if(parsed.title() == null || parsed.title().isBlank()){
-            throw new BusinessLogicException("Could not extract job title from description");
-        }
-
-        JobType      type      = jobParserService.resolveType(parsed.type());
-        JobSeniority seniority = jobParserService.resolveSeniority(parsed.seniority());
-        JobModel     model     = jobParserService.resolveModel(parsed.model());
-
-        Set<Skill> skills = jobParserService.resolveSkills(parsed.skills());
-
-        String applicationLink = parsed.applicationLink();
-
-        Job job = Job.builder()
-                .title(parsed.title())
-                .type(type)
-                .seniority(seniority)
-                .model(model)
-                .status(JobStatus.OPEN)
-                .source(JobSource.EXTERNAL)
-                .location(parsed.location())
-                .description(parsed.description())
-                .organizationName(parsed.organization())
-                .applicationLink(applicationLink)
-                .skills(skills)
-                .build();
-
+    public void importExternalJob(ImportJobRequest request, Authentication connectedUser) {
         User user = (User) connectedUser.getPrincipal();
-        job.setPostedBy(user);
+        PostJobEvent postJobEvent = new PostJobEvent(
+                null,
+                JobSource.EXTERNAL,
+                user.getId(),
+                request
+        );
 
-        Job savedJob = jobRepository.save(job);
-
-        try {
-            jobMatchingService.storeJobEmbedding(savedJob);
-        } catch (Exception e) {
-            throw new BusinessLogicException("Failed to store embedding, job not saved: " + e.getMessage());
-        }
-
-        return jobMapper.toJobResponse(savedJob);
+        postJobEventKafkaTemplate.send(KafkaConfig.JOB_POSTING_TOPIC,
+                        String.valueOf(UUID.randomUUID()), postJobEvent)
+                .exceptionally(ex -> {
+                    //TODO: kafka retrying
+                    log.error("Failed to publish job posting event for external job, retrying...", ex);
+                    return null;
+                });
     }
 
     @Transactional(readOnly = true)
@@ -360,11 +325,11 @@ public class JobService {
                 savedJob.getPostedBy().getId(),
                 List.of(DispatchPayload.Channel.EMAIL),
                 Map.of(
-                        "jobTitle",  savedJob.getTitle(),
-                        "jobType",   savedJob.getType().name(),
+                        "jobTitle", savedJob.getTitle(),
+                        "jobType", savedJob.getType().name(),
                         "seniority", savedJob.getSeniority().name(),
-                        "location",  savedJob.getLocation() != null ? savedJob.getLocation() : "Remote",
-                        "jobUrl",    "TODO" + savedJob.getId() //TODO
+                        "location", savedJob.getLocation() != null ? savedJob.getLocation() : "Remote",
+                        "jobUrl", "TODO" + savedJob.getId() //TODO
                 )
         );
 
@@ -426,6 +391,7 @@ public class JobService {
                 applications.isFirst(),
                 applications.isLast());
     }
+
     // export application to excel file
     public ExportTaskResponse startExportTask(Long jobId, Authentication connectedUser) {
         Job job = jobRepository.findById(jobId)
@@ -447,7 +413,7 @@ public class JobService {
 
 
         String taskId = UUID.randomUUID().toString();
-        ExportTask task = new ExportTask(taskId, jobId,TASK_EXPIRE_TIME);
+        ExportTask task = new ExportTask(taskId, jobId, TASK_EXPIRE_TIME);
         exportTasks.put(taskId, task);
 
         Thread.ofVirtual().name("export-job-" + jobId).start(() -> processExport(task, applications));

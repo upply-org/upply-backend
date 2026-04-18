@@ -22,7 +22,6 @@ import java.io.IOException;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
-    private final UserService userService;
 
     @PostMapping
     @Operation(
