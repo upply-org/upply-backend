@@ -3,6 +3,7 @@ package com.upply.config;
 
 import com.google.firebase.FirebaseApp;
 import com.upply.application.dto.ApplicationMatchEvent;
+import com.upply.job.dto.PostJobEvent;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
 import com.upply.user.dto.SkillEvent;
@@ -33,6 +34,11 @@ public class UpplyApplicationTests {
 
     @Bean
     public KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate() {
+        return Mockito.mock(KafkaTemplate.class);
+    }
+
+    @Bean
+    public KafkaTemplate<String, PostJobEvent> postJobEventKafkaTemplate() {
         return Mockito.mock(KafkaTemplate.class);
     }
 
