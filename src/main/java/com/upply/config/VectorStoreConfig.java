@@ -61,4 +61,16 @@ public class VectorStoreConfig {
                         AzureVectorStore.MetadataField.text("userId")
                 )).build();
     }
+
+    @Bean
+    public VectorStore userSkillsVectorStore(SearchIndexClient searchIndexClient,
+                                             EmbeddingModel embeddingModel){
+        return AzureVectorStore.builder(searchIndexClient,embeddingModel)
+                .indexName(IndexName.USER_SKILLS_INDEX)
+                .initializeSchema(false)
+                .filterMetadataFields(List.of(
+                        AzureVectorStore.MetadataField.text("userId")
+                )).build();
+    }
+
 }

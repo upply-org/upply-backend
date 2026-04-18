@@ -6,4 +6,5 @@ public final class IndexName {
 
     public static String JOBS_INDEX = "jobs-index";
     public static String RESUME_INDEX = "resume-index";
+    public static String USER_SKILLS_INDEX = "user-skills-index";
 }

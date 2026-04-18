@@ -1,6 +1,7 @@
 package com.upply.user;
 
 import com.upply.common.NormalizeSkillName;
+import com.upply.config.KafkaConfig;
 import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.job.Job;
 import com.upply.job.JobRepository;
@@ -27,19 +28,24 @@ import com.upply.profile.socialLink.*;
 import com.upply.profile.socialLink.dto.SocialLinkMapper;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
 import com.upply.profile.socialLink.dto.SocialLinkResponse;
+import com.upply.user.dto.SkillEvent;
 import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
 import com.upply.exception.custom.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,6 +66,7 @@ public class UserService {
     private final AzureStorageService azureStorageService;
     private final ResumeRepository resumeRepository;
     private final ResumeMapper resumeMapper;
+    private final KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate;
 
     public UserResponse getUser() {
         return userRepository.getCurrentUser()
@@ -89,6 +96,23 @@ public class UserService {
 
         user.getUserSkills().add(skill);
         userRepository.save(user);
+
+        SkillEvent skillEvent = new SkillEvent(
+                user.getId()
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        skillEventKafkaTemplate.send(
+                                KafkaConfig.UserSkillsEmbeddingTopic,
+                                UUID.randomUUID().toString(),
+                                skillEvent
+                        );
+                    }
+                }
+        );
     }
 
     @Transactional
@@ -107,6 +131,24 @@ public class UserService {
                 });
         user.getUserSkills().add(skill);
         userRepository.save(user);
+
+        SkillEvent skillEvent = new SkillEvent(
+                user.getId()
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        skillEventKafkaTemplate.send(
+                                KafkaConfig.UserSkillsEmbeddingTopic,
+                                UUID.randomUUID().toString(),
+                                skillEvent
+                        );
+                    }
+                }
+        );
+
     }
 
     @Transactional
