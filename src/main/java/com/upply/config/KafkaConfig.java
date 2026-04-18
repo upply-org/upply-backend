@@ -10,6 +10,7 @@ public class KafkaConfig {
     public static final String APPLICATION_MATCH_CALC_TOPIC = "application-match-calc";
     public static final String NOTIFICATION_EVENTS = "notification-events";
     public static final String NOTIFICATION_DISPATCH = "notification-dispatch";
+    public static final String UserSkillsEmbeddingTopic = "user-skills-embedding";
 
     @Bean
     public NewTopic applicationMatchTopic() {
@@ -34,4 +35,13 @@ public class KafkaConfig {
                 .replicas(2)
                 .build();
     }
+
+    @Bean
+    public NewTopic userSkillsEmbeddingTopic() {
+        return  TopicBuilder.name(UserSkillsEmbeddingTopic)
+                .partitions(2)
+                .replicas(2)
+                .build();
+    }
+
 }

@@ -4,6 +4,7 @@ import com.upply.application.dto.ApplicationMatchEvent;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
 import com.upply.profile.resume.AzureStorageService;
+import com.upply.user.dto.SkillEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,6 +26,9 @@ class UpplyApplicationTests {
 	@Qualifier("jobsVectorStore")
 	private VectorStore vectorStore;
 	@MockBean
+	@Qualifier("userSkillsVectorStore")
+	private VectorStore userSkillsVectorStore;
+	@MockBean
 	private AzureStorageService azureStorageService;
 	@MockBean
 	private KafkaTemplate<String, ApplicationMatchEvent> kafkaTemplate;
@@ -32,6 +36,8 @@ class UpplyApplicationTests {
 	private KafkaTemplate<String, NotificationEvent> notificationEventKafkaTemplate;
 	@MockBean
 	private KafkaTemplate<String, DispatchPayload> dispatchKafkaTemplate;
+	@MockBean
+	private KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate;
 	@Test
 	void contextLoads() {
 	}

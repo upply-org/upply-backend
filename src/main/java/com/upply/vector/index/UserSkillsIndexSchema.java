@@ -8,34 +8,32 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class JobsIndexSchema implements IndexSchema {
+public class UserSkillsIndexSchema implements IndexSchema {
     @Override
     public String indexName() {
-        return IndexName.JOBS_INDEX;
+        return IndexName.USER_SKILLS_INDEX;
     }
 
     @Override
     public String vectorProfile() {
-        return "jobs-vector-profile";
-    }
-
-    @Override
-    public String hnswConfig() {
-        return "jobs-hnsw-config";
-    }
-
-    @Override
-    public String semanticConfig() {
-        return "jobs-semantic-config";
-    }
-
-    @Override
-    public String semanticKeywordsField() {
-        return "meta_title";
+        return "user-skills-vector-profile";
     }
     @Override
     public int vectorDimensions() {
         return 384;
+    }
+
+    @Override
+    public String hnswConfig() {
+        return "user-skills-hnsw-config";
+    }
+    @Override
+    public String semanticConfig() {
+        return "user-skills-semantic-config";
+    }
+    @Override
+    public String semanticKeywordsField() {
+        return "meta_userId";
     }
 
     @Override
@@ -48,13 +46,8 @@ public class JobsIndexSchema implements IndexSchema {
                         .setVectorSearchDimensions(vectorDimensions())
                         .setVectorSearchProfileName(vectorProfile()),
                 new SearchField("metadata", SearchFieldDataType.STRING),
-                new SearchField("meta_jobId", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_title", SearchFieldDataType.STRING).setSearchable(true).setFilterable(true),
-                new SearchField("meta_status", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_type", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_seniority", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_model", SearchFieldDataType.STRING).setFilterable(true),
-                new SearchField("meta_location", SearchFieldDataType.STRING).setFilterable(true)
+                new SearchField("meta_userId", SearchFieldDataType.STRING).setFilterable(true)
         );
     }
+
 }

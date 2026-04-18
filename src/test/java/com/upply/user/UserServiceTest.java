@@ -19,7 +19,9 @@ import com.upply.profile.socialLink.dto.SocialLinkResponse;
 import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
+import com.upply.user.dto.SkillEvent;
 import com.upply.exception.custom.ResourceNotFoundException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.*;
 
@@ -67,6 +72,9 @@ class UserServiceTest {
     @Mock
     private SocialLinkMapper socialLinkMapper;
 
+    @Mock
+    private KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate;
+
     @InjectMocks
     private UserService userService;
 
@@ -88,6 +96,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
+        TransactionSynchronizationManager.initSynchronization();
         testUser = User.builder()
                 .id(1L)
                 .email("test@example.com")
@@ -201,6 +210,13 @@ class UserServiceTest {
                 .url("https://github.com/user")
                 .socialType(SocialType.GITHUB)
                 .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 
     @Test

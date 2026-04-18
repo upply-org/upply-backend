@@ -5,6 +5,7 @@ import com.google.firebase.FirebaseApp;
 import com.upply.application.dto.ApplicationMatchEvent;
 import com.upply.notification.dto.DispatchPayload;
 import com.upply.notification.dto.NotificationEvent;
+import com.upply.user.dto.SkillEvent;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -27,6 +28,11 @@ public class UpplyApplicationTests {
 
     @Bean
     public KafkaTemplate<String, DispatchPayload> dispatchKafkaTemplate() {
+        return Mockito.mock(KafkaTemplate.class);
+    }
+
+    @Bean
+    public KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate() {
         return Mockito.mock(KafkaTemplate.class);
     }
 
@@ -87,6 +93,11 @@ public class UpplyApplicationTests {
 
     @Bean
     public VectorStore resumeVectorStore() {
+        return Mockito.mock(VectorStore.class);
+    }
+
+    @Bean
+    public VectorStore userSkillsVectorStore() {
         return Mockito.mock(VectorStore.class);
     }
 
