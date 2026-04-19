@@ -65,7 +65,7 @@ The data layer consists of:
 - Resume download for recruiters
 - Application summary — AI-generated summary to help recruiters quickly view candidate highlights before opening the full application
 - Export applications to Excel (`.xlsx`)
-- 
+
 ### AI Job Matching
 - **BGE Small EN v1.5** (ONNX, runs locally) generates dense embeddings
 - Job embeddings are stored in **Azure AI Search** on publish
