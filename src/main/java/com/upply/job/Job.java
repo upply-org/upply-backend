@@ -53,7 +53,7 @@ public class Job {
 
     private String location;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     @Basic(fetch = FetchType.LAZY)
     private String description;
 
