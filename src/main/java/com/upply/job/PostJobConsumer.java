@@ -94,11 +94,14 @@ public class PostJobConsumer {
         try {
             jobMatchingService.storeJobEmbedding(savedJob);
             log.info("Successfully stored embedding for jobId: {}", savedJob.getId());
+            notifyMatchingUsers(savedJob);
         } catch (Exception e) {
             log.error("Failed to store embedding for jobId: {}, error: {}", savedJob.getId(), e.getMessage());
             throw new BusinessLogicException("Failed to store embedding, job not saved: " + e.getMessage());
         }
     }
+
+    private static final String FRONTEND_BASE_URL = "https://www.upply.tech/jobs";
 
     private void processInternalJob(PostJobEvent event) {
         log.info("Processing internal job with jobId: {}", event.getJobId());
@@ -110,6 +113,12 @@ public class PostJobConsumer {
         jobMatchingService.storeJobEmbedding(job);
         log.info("Successfully stored embedding for jobId: {}", job.getId());
 
+        notifyJobPostedSuccessfully(job);
+        notifyMatchingUsers(job);
+    }
+
+    private void notifyJobPostedSuccessfully(Job job) {
+        String jobUrl = FRONTEND_BASE_URL + "?id=" + job.getId();
         NotificationEvent notificationEvent = new NotificationEvent(
                 UUID.randomUUID().toString(),
                 NotificationEventType.JOB_POSTED_SUCCESSFULLY,
@@ -120,17 +129,53 @@ public class PostJobConsumer {
                         "jobType", job.getType().name(),
                         "seniority", job.getSeniority().name(),
                         "location", job.getLocation() != null ? job.getLocation() : "Not specified",
-                        "jobUrl", "TODO" + job.getId() //TODO
+                        "jobUrl", jobUrl
                 )
         );
 
         notificationKafkaTemplate.send(NOTIFICATION_EVENTS,
                         String.valueOf(job.getId()), notificationEvent)
                 .exceptionally(ex -> {
-                    log.error("Failed to publish submission notification for application {}",
+                    log.error("Failed to publish job posted notification for job {}",
                             job.getId(), ex);
                     return null;
                 });
-        log.info("Successfully published notification event for jobId: {}", job.getId());
+        log.info("Successfully published job posted notification for jobId: {}", job.getId());
+    }
+
+    private void notifyMatchingUsers(Job job) {
+        List<User> matchingUsers = jobMatchingService.findMatchingUsers(job, 20);
+        log.info("Found {} matching users for jobId: {}", matchingUsers.size(), job.getId());
+
+        String jobUrl = FRONTEND_BASE_URL + "?id=" + job.getId();
+        String jobCompany = job.getOrganizationName() != null ? job.getOrganizationName() : "Upply";
+
+        for (User user : matchingUsers) {
+            if (!user.isAccountActivated() || user.getEmail() == null) {
+                continue;
+            }
+
+            NotificationEvent notificationEvent = new NotificationEvent(
+                    UUID.randomUUID().toString(),
+                    NotificationEventType.NEW_MATCHED_JOBS,
+                    user.getId(),
+                    List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
+                    Map.of(
+                            "jobId", job.getId(),
+                            "jobTitle", job.getTitle(),
+                            "jobCompany", jobCompany,
+                            "jobUrl", jobUrl
+                    )
+            );
+
+            notificationKafkaTemplate.send(NOTIFICATION_EVENTS,
+                            String.valueOf(user.getId()), notificationEvent)
+                    .exceptionally(ex -> {
+                        log.error("Failed to publish matched jobs notification for user {}",
+                                user.getId(), ex);
+                        return null;
+                    });
+            log.debug("Published notification for user {} for job {}", user.getId(), job.getId());
+        }
     }
 }
