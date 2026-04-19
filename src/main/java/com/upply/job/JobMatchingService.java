@@ -20,15 +20,18 @@ import java.util.stream.Collectors;
 @Service
 public class JobMatchingService {
     private final VectorStore jobsVectorStore;
+    private final VectorStore userSkillsVectorStore;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
 
     public JobMatchingService(
             @Qualifier("jobsVectorStore") VectorStore jobsVectorStore,
+            @Qualifier("userSkillsVectorStore") VectorStore userSkillsVectorStore,
             JobRepository jobRepository,
             UserRepository userRepository
     ) {
         this.jobsVectorStore = jobsVectorStore;
+        this.userSkillsVectorStore = userSkillsVectorStore;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
     }
@@ -183,6 +186,29 @@ public class JobMatchingService {
         } catch (Exception e) {
             log.error("Error calculating match score for user {} and job {}", user.getId(), job.getId(), e);
             return 0.0;
+        }
+    }
+
+    public List<User> findMatchingUsers(Job job, int topK) {
+        try {
+            String jobContent = buildJobContent(job);
+
+            SearchRequest searchRequest = SearchRequest.builder()
+                    .query(jobContent)
+                    .topK(topK)
+                    .similarityThreshold(0.0)
+                    .build();
+
+            List<Document> similarDocuments = userSkillsVectorStore.similaritySearch(searchRequest);
+
+            List<Long> userIds = similarDocuments.stream()
+                    .map(doc -> Long.valueOf(doc.getId()))
+                    .toList();
+
+            return userRepository.findAllById(userIds);
+        } catch (Exception e) {
+            log.error("Error finding matching users for job ID: {}", job.getId(), e);
+            throw new RuntimeException("Failed to find matching users", e);
         }
     }
 }

@@ -2,48 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Daily Reminder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Job Match</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color:#f5f6fa; margin:0; padding:40px;">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color:#f8f9fa; margin:0; padding:40px;">
 
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin:auto; background:white; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.1);">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin:auto; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     <tr>
-        <td style="padding: 30px; text-align:center;">
-            <h2 style="color:#2d3436; margin-bottom:10px;">Don't Break Your Streak! 💡</h2>
-            <p style="color:#636e72; font-size:15px;">
-                Hi <b th:text="${firstName}">User</b>,
-                <br><br>
-                You haven't been active today. Keep your streak going!
-                <br><br>
-                Current Streak:
+        <td style="padding: 40px 30px;">
+            <div style="text-align:center; margin-bottom:30px;">
+                <div style="display:inline-block; background:#e3f2fd; border-radius:50%; width:56px; height:56px; line-height:56px; text-align:center;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1976d2" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <h1 style="color:#1a1a2e; font-size:22px; font-weight:600; margin:0 0 8px 0; text-align:center;">
+                A New Job Matches Your Skills
+            </h1>
+
+            <p style="color:#4a5568; font-size:15px; margin:0 0 30px 0; text-align:center;">
+                Hi <span th:text="${firstName}" style="font-weight:600;">User</span>,
             </p>
 
-            <span th:text="${streak} + ' days'"
-                  style="display:inline-block; background:#00b894; color:white;
-                             padding:8px 20px; border-radius:20px; font-size:14px; font-weight:bold;">
-                    0 days
-                </span>
+            <div style="background:#f8f9fa; border-radius:10px; padding:24px; margin-bottom:30px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="padding-bottom:12px;">
+                            <span style="color:#718096; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Position</span>
+                            <p style="margin:4px 0 0 0; color:#1a1a2e; font-size:17px; font-weight:500;" th:text="${jobTitle}">
+                                Software Engineer
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding-top:12px;">
+                            <span style="color:#718096; font-size:12px; text-transform:uppercase; letter-spacing:0.5px;">Company</span>
+                            <p style="margin:4px 0 0 0; color:#1a1a2e; font-size:17px; font-weight:500;" th:text="${jobCompany}">
+                                Acme Corp
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
 
-            <br>
+            <div style="text-align:center;">
+                <a th:href="${jobUrl}"
+                   style="display:inline-block; background:#1976d2; color:white;
+                              padding:14px 32px; border-radius:8px; text-decoration:none;
+                              font-size:15px; font-weight:500;">
+                    View Job Details
+                </a>
+            </div>
 
-            <a th:href="${problemsUrl}"
-               style="display:inline-block; margin-top:25px; background:#0984e3; color:white;
-                          padding:14px 28px; border-radius:6px; text-decoration:none; font-size:16px;">
-                Solve a Problem Now
-            </a>
-
-            <p style="margin-top:30px; color:#b2bec3; font-size:12px;">
-                If the button doesn't work, copy and paste the link below:
+            <p style="margin-top:24px; color:#a0aec0; font-size:13px; text-align:center;">
+                If the button doesn't work, copy and paste this link into your browser:
+            </p>
+            <p style="color:#1976d2; font-size:13px; text-align:center; word-break:break-all;" th:text="${jobUrl}">
+                https://www.upply.tech/jobs?id=123
             </p>
 
-            <p style="color:#0984e3; font-size:12px; word-break: break-all;" th:text="${problemsUrl}">
-                https://upply.com/problems
-            </p>
-
-            <p style="margin-top:40px; color:#b2bec3; font-size:12px;">
-                You are receiving this because you enabled daily reminders.
-                You can disable them in your account settings.
-            </p>
+            <div style="margin-top:40px; padding-top:24px; border-top:1px solid #e2e8f0; text-align:center;">
+                <p style="color:#a0aec0; font-size:12px; margin:0;">
+                    You're receiving this because your skills match jobs posted on Upply.
+                </p>
+            </div>
         </td>
     </tr>
 </table>
