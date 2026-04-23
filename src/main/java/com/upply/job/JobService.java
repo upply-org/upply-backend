@@ -23,6 +23,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,6 +67,7 @@ public class JobService {
     private int TASK_EXPIRE_TIME;
 
     @Transactional
+    @CachePut(value = "JOB_CACHE", key = "#result.id")
     public JobResponse createJob(@Valid JobRequest request, Authentication connectedUser) {
 
         Set<Skill> skills = new HashSet<>(
@@ -122,6 +126,7 @@ public class JobService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "JOB_CACHE", key = "#id")
     public JobResponse getJob(Long id) {
 
         Job job = jobRepository.findById(id)
@@ -237,6 +242,7 @@ public class JobService {
     }
 
     @Transactional
+    @CacheEvict(value = "JOB_CACHE", key = "#id")
     public JobResponse closeJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)

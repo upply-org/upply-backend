@@ -62,12 +62,15 @@ spring:
           jdbc:
             initialize-schema: always
 
-  #  data:
-#    redis:
-#      host: ${REDIS_HOST}
-#      port: ${REDIS_PORT}
-#      username: ${REDIS_USERNAME}
-#      password: ${REDIS_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
+
+  cache:
+    type: redis
 
   servlet:
     multipart:
