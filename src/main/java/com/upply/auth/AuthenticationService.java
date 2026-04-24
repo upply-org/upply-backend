@@ -1,8 +1,10 @@
 package com.upply.auth;
 
+import com.upply.auth.dto.ForgotPasswordRequest;
 import com.upply.auth.dto.LoginRequest;
 import com.upply.auth.dto.LoginResponse;
 import com.upply.auth.dto.RegisterRequest;
+import com.upply.auth.dto.ResetPasswordRequest;
 import com.upply.email.EmailService;
 import com.upply.exception.custom.BusinessLogicException;
 import com.upply.exception.custom.ResourceNotFoundException;
@@ -10,6 +12,8 @@ import com.upply.email.EmailTemplate;
 import com.upply.security.JwtService;
 import com.upply.token.ActivationToken;
 import com.upply.token.ActivationTokenRepository;
+import com.upply.token.ResetPasswordToken;
+import com.upply.token.ResetPasswordTokenRepository;
 import com.upply.user.User;
 import com.upply.user.UserRepository;
 import jakarta.validation.Valid;
@@ -34,6 +38,7 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final ActivationTokenRepository activationTokenRepository;
+    private final ResetPasswordTokenRepository resetPasswordTokenRepository;
 
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -43,6 +48,9 @@ public class AuthenticationService {
 
     @Value("${app.activation-base-url}")
     private String activationBaseUrl;
+
+    @Value("${app.reset-password-base-url}")
+    private String resetPasswordBaseUrl;
 
     private String generateActivationToken() {
 
@@ -180,5 +188,79 @@ public class AuthenticationService {
         return LoginResponse.builder()
                 .token(jwtToken)
                 .build();
+    }
+
+    private String generateResetPasswordToken() {
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] bytes = new byte[32];
+        secureRandom.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private String generateAndSaveResetPasswordToken(User user) {
+
+        resetPasswordTokenRepository.markAllTokensAsUsedForUser(user.getId());
+
+        String tokenString = generateResetPasswordToken();
+
+        ResetPasswordToken resetPasswordToken = ResetPasswordToken.builder()
+                .token(tokenString)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusHours(1))
+                .used(false)
+                .user(user)
+                .build();
+
+        resetPasswordTokenRepository.save(resetPasswordToken);
+        return tokenString;
+    }
+
+    public void forgotPassword(ForgotPasswordRequest request) {
+        String email = request.getEmail();
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            return;
+        }
+
+        User user = optionalUser.get();
+
+        String tokenString = generateAndSaveResetPasswordToken(user);
+
+        String resetLink = resetPasswordBaseUrl + "?token=" + tokenString;
+
+        Map<String, Object> vars = new HashMap<>();
+        vars.put("firstName", user.getFirstName());
+        vars.put("resetLink", resetLink);
+
+        emailService.sendEmail(
+                user.getEmail(),
+                "Reset Your Password",
+                EmailTemplate.ResetPassword,
+                vars
+        );
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        ResetPasswordToken token = resetPasswordTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid reset token"));
+
+        if (token.isUsed()) {
+            throw new BusinessLogicException("Reset token is already used");
+        }
+
+        if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BusinessLogicException("Reset token is expired");
+        }
+
+        User user = token.getUser();
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        token.setUsed(true);
+        resetPasswordTokenRepository.save(token);
     }
 }
