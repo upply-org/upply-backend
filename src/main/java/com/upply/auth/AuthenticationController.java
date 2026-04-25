@@ -3,6 +3,8 @@ package com.upply.auth;
 import com.upply.auth.dto.LoginRequest;
 import com.upply.auth.dto.LoginResponse;
 import com.upply.auth.dto.RegisterRequest;
+import com.upply.auth.dto.ForgotPasswordRequest;
+import com.upply.auth.dto.ResetPasswordRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,5 +36,17 @@ public class AuthenticationController {
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
 
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok("If an account exists, a reset link has been sent");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok("Password reset successfully");
     }
 }

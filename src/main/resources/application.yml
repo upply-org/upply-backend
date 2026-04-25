@@ -120,6 +120,7 @@ jwt:
 
 app:
   activation-base-url: ${ACTIVATION_BASE_URL}
+  reset-password-base-url: ${RESET_PASSWORD_BASE_URL}
   export:
     task-expire-seconds: ${TASK_EXPIRE_SECONDS}
     cleanup-interval-ms: ${SCULDER_CLEANUP_TIME}
