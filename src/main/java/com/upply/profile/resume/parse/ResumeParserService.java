@@ -1,6 +1,7 @@
 package com.upply.profile.resume.parse;
 
 import com.upply.common.NormalizeSkillName;
+import com.upply.config.KafkaConfig;
 import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.profile.experience.Experience;
 import com.upply.profile.experience.ExperienceRepository;
@@ -23,6 +24,7 @@ import com.upply.profile.socialLink.dto.SocialLinkMapper;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
 import com.upply.user.User;
 import com.upply.user.UserRepository;
+import com.upply.user.dto.SkillEvent;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
@@ -30,13 +32,13 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -54,6 +56,8 @@ public class ResumeParserService {
     private final ExperienceMapper experienceMapper;
     private final ProjectMapper projectMapper;
     private final SocialLinkMapper socialLinkMapper;
+    private final KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate;
+
 
     public ResumeParserService(
             @Qualifier("resumeParserGroqChatClient") ChatClient groqChatClient,
@@ -67,7 +71,8 @@ public class ResumeParserService {
             SocialLinkRepository socialLinkRepository,
             ExperienceMapper experienceMapper,
             ProjectMapper projectMapper,
-            SocialLinkMapper socialLinkMapper) {
+            SocialLinkMapper socialLinkMapper,
+            KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate) {
         this.groqChatClient = groqChatClient;
         this.geminiChatClient = geminiChatClient;
         this.userRepository = userRepository;
@@ -80,6 +85,7 @@ public class ResumeParserService {
         this.experienceMapper = experienceMapper;
         this.projectMapper = projectMapper;
         this.socialLinkMapper = socialLinkMapper;
+        this.skillEventKafkaTemplate = skillEventKafkaTemplate;
     }
 
     public ParsedResumeResponse preview(Long resumeId) {
@@ -151,6 +157,22 @@ public class ResumeParserService {
                             ));
                     user.getUserSkills().add(skill);
                 });
+        SkillEvent skillEvent = new SkillEvent(
+                user.getId()
+        );
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        skillEventKafkaTemplate.send(
+                                KafkaConfig.UserSkillsEmbeddingTopic,
+                                UUID.randomUUID().toString(),
+                                skillEvent
+                        );
+                    }
+                }
+        );
         userRepository.save(user);
     }
 
