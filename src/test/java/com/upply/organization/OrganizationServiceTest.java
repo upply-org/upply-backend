@@ -267,13 +267,12 @@ class OrganizationServiceTest {
     @Test
     @DisplayName("initiateConnection should throw when user already connected to existing org")
     void shouldThrowWhenUserAlreadyConnectedToOrg() {
-        testOrganization.getRecruiters().add(testUser);
-
         ConnectToOrganizationRequest request = ConnectToOrganizationRequest.builder()
                 .businessEmail("user@techcorp.com")
                 .build();
 
         when(organizationRepository.findByDomain("techcorp.com")).thenReturn(Optional.of(testOrganization));
+        when(organizationRepository.existsRecruiterInOrganization(1L, 1L)).thenReturn(true);
 
         BusinessLogicException exception = assertThrows(
                 BusinessLogicException.class,
@@ -330,6 +329,22 @@ class OrganizationServiceTest {
                 eq(EmailTemplate.BUSINESS_EMAIL_VERIFICATION),
                 anyMap()
         );
+    }
+
+    @Test
+    @DisplayName("initiateConnection should not update user organization in database")
+    void shouldNotUpdateUserOrganizationOnInitiateConnection() throws JsonProcessingException {
+        ConnectToOrganizationRequest request = ConnectToOrganizationRequest.builder()
+                .businessEmail("user@techcorp.com")
+                .build();
+
+        when(organizationRepository.findByDomain("techcorp.com")).thenReturn(Optional.of(testOrganization));
+        when(tokenRepository.save(any(BusinessEmailVerificationToken.class))).thenReturn(null);
+
+        organizationService.initiateConnection(request, testUser);
+
+        verify(userRepository, never()).save(any(User.class));
+        assertNull(testUser.getOrganization());
     }
 
     // ==================== verifyAndConnect tests ====================

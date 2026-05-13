@@ -128,8 +128,7 @@ public class OrganizationService {
 
         if (existingOrg.isPresent()) {
             Organization org = existingOrg.get();
-            boolean isAlreadyRecruiter = org.getRecruiters().stream()
-                    .anyMatch(r -> r.getId().equals(user.getId()));
+            boolean isAlreadyRecruiter = organizationRepository.existsRecruiterInOrganization(org.getId(), user.getId());
 
             if (isAlreadyRecruiter) {
                 throw new BusinessLogicException("You are already connected to this organization.");
