@@ -18,4 +18,7 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 
     @Query("SELECT j FROM Job j WHERE j.organization.id = :orgId AND j.status = :status")
     Page<Job> findJobsByOrganizationIdAndStatus(@Param("orgId") Long orgId, @Param("status") JobStatus status, Pageable pageable);
+
+    @Query("SELECT COUNT(r) > 0 FROM Organization o JOIN o.recruiters r WHERE o.id = :orgId AND r.id = :userId")
+    boolean existsRecruiterInOrganization(@Param("orgId") Long orgId, @Param("userId") Long userId);
 }
