@@ -156,7 +156,7 @@ public class ApplicationService {
 
     @Transactional
     public ApplicationResponse updateApplicationStatus(Long applicationId, ApplicationStatus newStatus) {
-        Application application = applicationRepository.getApplicationById(applicationId)
+        Application application = applicationRepository.findApplicationById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Application Not Found"));
 
         validateStatusTransition(application.getStatus(), newStatus);
