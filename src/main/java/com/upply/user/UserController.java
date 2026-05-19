@@ -10,6 +10,7 @@ import com.upply.profile.skill.dto.SkillRequest;
 import com.upply.profile.skill.dto.SkillResponse;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
 import com.upply.profile.socialLink.dto.SocialLinkResponse;
+import com.upply.organization.dto.OrganizationResponse;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +41,15 @@ public class UserController {
     )
     public ResponseEntity<UserResponse> getUser() {
         return ResponseEntity.ok(userService.getUser());
+    }
+
+    @GetMapping("/organization")
+    @Operation(
+            summary = "Get authenticated user's organization",
+            description = "Retrieves the organization that the authenticated user is connected to."
+    )
+    public ResponseEntity<OrganizationResponse> getUserOrganization() {
+        return ResponseEntity.ok(userService.getUserOrganization());
     }
 
     @PutMapping

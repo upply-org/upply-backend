@@ -12,6 +12,9 @@ import com.upply.profile.skill.*;
 import com.upply.profile.skill.dto.SkillMapper;
 import com.upply.profile.skill.dto.SkillRequest;
 import com.upply.profile.skill.dto.SkillResponse;
+import com.upply.organization.Organization;
+import com.upply.organization.dto.OrganizationMapper;
+import com.upply.organization.dto.OrganizationResponse;
 import com.upply.profile.socialLink.*;
 import com.upply.profile.socialLink.dto.SocialLinkMapper;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
@@ -74,6 +77,9 @@ class UserServiceTest {
 
     @Mock
     private KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate;
+
+    @Mock
+    private OrganizationMapper organizationMapper;
 
     @InjectMocks
     private UserService userService;
@@ -1047,6 +1053,69 @@ class UserServiceTest {
         userService.deleteUserLinks(999L);
 
         verify(socialLinkRepository).deleteSocialLinkById(999L);
+    }
+
+    // getUserOrganization tests
+
+    @Test
+    @DisplayName("getUserOrganization should return organization when user is connected")
+    void shouldGetUserOrganizationSuccessfully() {
+        Organization testOrganization = Organization.builder()
+                .id(1L)
+                .name("Test Organization")
+                .domain("test.com")
+                .build();
+
+        OrganizationResponse testOrganizationResponse = OrganizationResponse.builder()
+                .id(1L)
+                .name("Test Organization")
+                .domain("test.com")
+                .build();
+
+        testUser.setOrganization(testOrganization);
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(organizationMapper.toResponse(testOrganization)).thenReturn(testOrganizationResponse);
+
+        OrganizationResponse result = userService.getUserOrganization();
+
+        assertNotNull(result);
+        assertEquals(testOrganizationResponse, result);
+        assertEquals("Test Organization", result.getName());
+        verify(userRepository).getCurrentUser();
+        verify(organizationMapper).toResponse(testOrganization);
+    }
+
+    @Test
+    @DisplayName("getUserOrganization should throw ResourceNotFoundException when user has no organization")
+    void shouldThrowExceptionWhenUserNotConnectedToOrganization() {
+        testUser.setOrganization(null);
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.getUserOrganization()
+        );
+
+        assertEquals("User is not connected to any organization", exception.getMessage());
+        verify(userRepository).getCurrentUser();
+        verify(organizationMapper, never()).toResponse(any());
+    }
+
+    @Test
+    @DisplayName("getUserOrganization should throw ResourceNotFoundException when user does not exist")
+    void shouldThrowExceptionWhenUserNotFoundInGetUserOrganization() {
+        when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.getUserOrganization()
+        );
+
+        assertEquals("User Not Found", exception.getMessage());
+        verify(userRepository).getCurrentUser();
+        verify(organizationMapper, never()).toResponse(any());
     }
 }
 
