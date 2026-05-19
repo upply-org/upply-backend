@@ -198,6 +198,7 @@ public class JobService {
     }
 
     @Transactional
+    @CacheEvict(value = "JOB_CACHE", key = "#id")
     public JobResponse updateJob(Long id, JobUpdateRequest request, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
@@ -277,6 +278,7 @@ public class JobService {
     }
 
     @Transactional
+    @CacheEvict(value = "JOB_CACHE", key = "#id")
     public JobResponse pauseJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
@@ -307,6 +309,7 @@ public class JobService {
     }
 
     @Transactional
+    @CacheEvict(value = "JOB_CACHE", key = "#id")
     public JobResponse resumeJob(Long id, Authentication connectedUser) {
 
         Job job = jobRepository.findById(id)
