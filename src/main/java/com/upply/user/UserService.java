@@ -28,6 +28,8 @@ import com.upply.profile.socialLink.*;
 import com.upply.profile.socialLink.dto.SocialLinkMapper;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
 import com.upply.profile.socialLink.dto.SocialLinkResponse;
+import com.upply.organization.dto.OrganizationMapper;
+import com.upply.organization.dto.OrganizationResponse;
 import com.upply.user.dto.SkillEvent;
 import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
@@ -67,11 +69,23 @@ public class UserService {
     private final ResumeRepository resumeRepository;
     private final ResumeMapper resumeMapper;
     private final KafkaTemplate<String, SkillEvent> skillEventKafkaTemplate;
+    private final OrganizationMapper organizationMapper;
 
     public UserResponse getUser() {
         return userRepository.getCurrentUser()
                 .map(userMapper::toUserResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+    }
+
+    public OrganizationResponse getUserOrganization() {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        if (user.getOrganization() == null) {
+            throw new ResourceNotFoundException("User is not connected to any organization");
+        }
+
+        return organizationMapper.toResponse(user.getOrganization());
     }
 
     public void updateUser(UserRequest userRequest) {
