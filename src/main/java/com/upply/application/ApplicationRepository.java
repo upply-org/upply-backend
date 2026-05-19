@@ -5,6 +5,7 @@ import com.upply.job.Job;
 import com.upply.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,6 +16,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     @Query("select a from Application a where a.applicant.id =?#{principal.getId()}")
     Page<Application> getUserApplications(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"applicant", "job"})
+    @Query("SELECT a FROM Application a WHERE a.id = :applicationId AND a.job.postedBy.id = ?#{principal.getId()}")
+    Optional<Application> findApplicationById(Long applicationId);
 
     @Query("select a from Application a where a.applicant.id = ?#{principal.getId()} and a.id = :applicationId")
     Optional<Application> getApplicationById(Long applicationId);
