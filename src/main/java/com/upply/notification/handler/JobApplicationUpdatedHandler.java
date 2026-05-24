@@ -35,7 +35,7 @@ public class JobApplicationUpdatedHandler implements NotificationHandler {
                             "jobTitle", p.get("jobTitle"),
                             "company", p.get("company"),
                             "status", p.get("status"),
-                            "applicationUrl", "https://upply.com/my-applications"
+                            "applicationUrl", "https://www.upply.tech/applications"
                     ))
                     .build());
 

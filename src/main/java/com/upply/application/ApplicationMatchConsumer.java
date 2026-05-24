@@ -1,15 +1,13 @@
 package com.upply.application;
 
 import com.upply.application.dto.ApplicationMatchEvent;
+import com.upply.application.dto.ApplicationSummaryResult;
 import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.job.Job;
-import com.upply.job.JobMatchingService;
 import com.upply.job.JobRepository;
 import com.upply.profile.resume.AzureStorageService;
 import com.upply.profile.resume.Resume;
 import com.upply.profile.resume.chunks.ResumeVectorService;
-import com.upply.user.User;
-import com.upply.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -24,9 +22,7 @@ import static com.upply.config.KafkaConfig.APPLICATION_MATCH_CALC_TOPIC;
 @Service
 @RequiredArgsConstructor
 public class ApplicationMatchConsumer {
-    private final JobMatchingService jobMatchingService;
     private final ApplicationRepository applicationRepository;
-    private final UserRepository userRepository;
     private final JobRepository jobRepository;
     private final AzureStorageService azureStorageService;
     private final ApplicationSummaryService applicationSummaryService;
@@ -44,9 +40,6 @@ public class ApplicationMatchConsumer {
         Application application = applicationRepository.findById(event.getApplicationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found: " + event.getApplicationId()));
 
-        User user = userRepository.findById(event.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("user not found: " + event.getUserId()));
-
         Job job = jobRepository.findById(event.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found: " + event.getJobId()));
 
@@ -61,7 +54,7 @@ public class ApplicationMatchConsumer {
         Long applicationJobId = application.getJob().getId();
         Long resumeId = resume.getId();
 
-        calcMatch(application, user, job, resumeTxt);
+        calcMatch(application, job, resumeTxt);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
@@ -77,18 +70,11 @@ public class ApplicationMatchConsumer {
 
     }
 
-    private void calcMatch(Application application, User user, Job job, String resumeTxt) {
+    private void calcMatch(Application application, Job job, String resumeTxt) {
         try {
-            double score = jobMatchingService.calculateMatchScore(user, job);
-            application.setMatchingRatio(score);
-
-            try {
-                String summary = applicationSummaryService.callAi(score, job, resumeTxt);
-                application.setSummary(summary);
-            } catch (Exception ex) {
-                log.warn("AI summary generation failed for applicationId: {}, proceeding without summary", application.getId(), ex);
-            }
-
+            ApplicationSummaryResult result = applicationSummaryService.callAi(job, resumeTxt);
+            application.setMatchingRatio(result.fitScore() / 100.0);
+            application.setSummary(result.summary());
             applicationRepository.save(application);
         } catch (Exception e) {
             log.error("Failed to process application match", e);
