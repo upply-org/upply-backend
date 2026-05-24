@@ -107,7 +107,7 @@ public class ResumeAnalysisService {
                 sectionNames(ResumeSectionGroups.JOB_SPECIFIC_SECTIONS),
                 formatProfile(ctx),
                 job.getTitle(),
-                job.getOrganization().getName()!= null ? job.getOrganization().getName() : "N/A",
+                job.getOrganization().getName() != null && job.getOrganization() != null ? job.getOrganization().getName() : "N/A",
                 job.getSeniority(),
                 job.getModel(),
                 job.getLocation() != null ? job.getLocation() : "N/A",
