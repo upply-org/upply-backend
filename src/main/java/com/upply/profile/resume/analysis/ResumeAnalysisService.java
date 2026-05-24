@@ -3,6 +3,8 @@ package com.upply.profile.resume.analysis;
 import com.upply.exception.custom.ResourceNotFoundException;
 import com.upply.job.Job;
 import com.upply.job.JobRepository;
+import com.upply.job.enums.JobSource;
+import com.upply.job.enums.JobType;
 import com.upply.profile.resume.AzureStorageService;
 import com.upply.profile.resume.ResumeRepository;
 import com.upply.profile.resume.dto.ResumeAnalysisResponse;
@@ -107,7 +109,7 @@ public class ResumeAnalysisService {
                 sectionNames(ResumeSectionGroups.JOB_SPECIFIC_SECTIONS),
                 formatProfile(ctx),
                 job.getTitle(),
-                job.getOrganization().getName() != null && job.getOrganization() != null ? job.getOrganization().getName() : "N/A",
+                getJobOrganizationName(job),
                 job.getSeniority(),
                 job.getModel(),
                 job.getLocation() != null ? job.getLocation() : "N/A",
@@ -118,6 +120,14 @@ public class ResumeAnalysisService {
         );
     }
 
+    private String getJobOrganizationName(Job job) {
+        if (job.getSource().equals(JobSource.INTERNAL)) {
+            return job.getOrganization() != null && job.getOrganization().getName() != null ? job.getOrganization().getName() : "N/A";
+        } else if (job.getSource().equals(JobSource.EXTERNAL)) {
+            return job.getOrganizationName() != null ? job.getOrganizationName() : "N/A";
+        }
+        return "N/A";
+    }
 
     private String formatProfile(UserProfileContext ctx) {
         return """
