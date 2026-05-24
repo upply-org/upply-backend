@@ -66,6 +66,9 @@ public class JobService {
     @Value("${app.export.task-expire-seconds}")
     private int TASK_EXPIRE_TIME;
 
+    @Value("${app.job-url}")
+    private String JOB_URL;
+
     @Transactional
     @CachePut(value = "JOB_CACHE", key = "#result.id")
     public JobResponse createJob(@Valid JobRequest request, Authentication connectedUser) {
@@ -346,7 +349,7 @@ public class JobService {
                         "jobType", savedJob.getType().name(),
                         "seniority", savedJob.getSeniority().name(),
                         "location", savedJob.getLocation() != null ? savedJob.getLocation() : "Remote",
-                        "jobUrl", "TODO" + savedJob.getId() //TODO
+                        "jobUrl", JOB_URL + "?id=" + savedJob.getId()
                 )
         );
 
