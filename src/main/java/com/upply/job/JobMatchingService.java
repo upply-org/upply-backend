@@ -196,7 +196,7 @@ public class JobMatchingService {
             SearchRequest searchRequest = SearchRequest.builder()
                     .query(jobContent)
                     .topK(topK)
-                    .similarityThreshold(0.0)
+                    .similarityThreshold(0.8)
                     .build();
 
             List<Document> similarDocuments = userSkillsVectorStore.similaritySearch(searchRequest);

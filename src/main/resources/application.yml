@@ -122,6 +122,9 @@ app:
   activation-base-url: ${ACTIVATION_BASE_URL}
   reset-password-base-url: ${RESET_PASSWORD_BASE_URL}
   business-email-verification-base-url: ${BUSINESS_EMAIL_VERIFICATION_BASE_URL}
+  application-url: ${APPLICATION_URL}
+  recruter-application-url: ${RECRUITER_APPLICATION_URL}
+  job-url: ${JOB_URL}
   export:
     task-expire-seconds: ${TASK_EXPIRE_SECONDS}
     cleanup-interval-ms: ${SCULDER_CLEANUP_TIME}

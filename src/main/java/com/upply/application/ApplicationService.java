@@ -5,7 +5,6 @@ import com.upply.application.dto.ApplicationMatchEvent;
 import com.upply.application.dto.ApplicationRequest;
 import com.upply.application.dto.ApplicationResponse;
 import com.upply.application.enums.ApplicationStatus;
-import com.upply.common.NotificationEventType;
 import com.upply.common.PageResponse;
 import com.upply.exception.custom.BusinessLogicException;
 import com.upply.exception.custom.OperationNotPermittedException;
@@ -97,7 +96,7 @@ public class ApplicationService {
                 List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
                 Map.of(
                         "jobTitle", job.getTitle(),
-                        "company", "TODO", //TODO
+                        "company", job.getOrganization().getName(),
                         "status", ApplicationStatus.SUBMITTED.name()
                 )
         );
@@ -172,7 +171,7 @@ public class ApplicationService {
                 List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
                 Map.of(
                         "jobTitle", application.getJob().getTitle(),
-                        "company", "TODO", //TODO
+                        "company", application.getJob().getOrganization().getName(),
                         "status", application.getStatus()
                 )
         );

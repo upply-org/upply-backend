@@ -107,8 +107,7 @@ public class ResumeAnalysisService {
                 sectionNames(ResumeSectionGroups.JOB_SPECIFIC_SECTIONS),
                 formatProfile(ctx),
                 job.getTitle(),
-                "our org name is : ", //hardcoded string
-                //job.getOrganization().getName(), TODO: add ORG and delete the hard coded string
+                job.getOrganization().getName(),
                 job.getSeniority(),
                 job.getModel(),
                 job.getLocation() != null ? job.getLocation() : "N/A",

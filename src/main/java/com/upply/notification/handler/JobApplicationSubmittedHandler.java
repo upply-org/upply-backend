@@ -43,7 +43,7 @@ public class JobApplicationSubmittedHandler implements NotificationHandler {
                     .to(user.getDeviceToken())
                     .title("Application Submitted")
                     .body("Your application for " + p.get("jobTitle") + " at " + p.get("company") + " has been submitted!")
-                    .redirectTo("/my-applications")
+                    .redirectTo("/applications")
                     .build());
 
             default -> Optional.empty();

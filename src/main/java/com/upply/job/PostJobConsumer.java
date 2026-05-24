@@ -13,6 +13,7 @@ import com.upply.user.User;
 import com.upply.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -101,7 +102,8 @@ public class PostJobConsumer {
         }
     }
 
-    private static final String FRONTEND_BASE_URL = "https://www.upply.tech/jobs";
+    @Value("${app.job-url}")
+    private String FRONTEND_BASE_URL;
 
     private void processInternalJob(PostJobEvent event) {
         log.info("Processing internal job with jobId: {}", event.getJobId());
