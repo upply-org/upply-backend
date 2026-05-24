@@ -10,6 +10,7 @@ import com.upply.user.dto.SkillEvent;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -131,5 +132,10 @@ public class UpplyApplicationTests {
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return Mockito.mock(RedisConnectionFactory.class);
+    }
+
+    @Bean
+    public EmbeddingModel embeddingModel() {
+        return Mockito.mock(EmbeddingModel.class);
     }
 }

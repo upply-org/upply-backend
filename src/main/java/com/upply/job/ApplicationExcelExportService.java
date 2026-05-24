@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -15,12 +16,14 @@ import java.util.List;
 @Service
 @Slf4j
 public class ApplicationExcelExportService {
+    @Value("${app.recruter-application-url}")
+    public  String APPLICATION_URL;
 
     private static final String[] HEADERS = {
             "Applicant Name",
             "Email",
             "University",
-            "Applicant Profile",
+            "AI Summary",
             "Job Title",
             "Cover Letter",
             "Resume View",
@@ -67,24 +70,11 @@ public class ApplicationExcelExportService {
                 row.createCell(2).setCellValue(app.getApplicant() != null && app.getApplicant().getUniversity() != null
                         ? app.getApplicant().getUniversity() : "");
 
-                if (app.getApplicant() != null) {
-                    //TODO: add domain
-                    String profileUrl = "/api/v1/user/" + app.getApplicant().getId() + "/profile";
-                    Cell profileCell = row.createCell(3);
-                    profileCell.setCellValue(profileUrl);
-                    Hyperlink profileLink = creationHelper.createHyperlink(HyperlinkType.URL);
-                    profileLink.setAddress(profileUrl);
-                    profileCell.setHyperlink(profileLink);
-                    profileCell.setCellStyle(linkStyle);
-                } else {
-                    row.createCell(3).setCellValue("");
-                }
-
+                row.createCell(3).setCellValue(app.getSummary() != null ? app.getSummary() : "");
                 row.createCell(4).setCellValue(app.getJob() != null ? app.getJob().getTitle() : "");
                 row.createCell(5).setCellValue(app.getCoverLetter() != null ? app.getCoverLetter() : "");
 
-                //TODO: add domain
-                String resumeUrl = "/api/v1/applications/" + app.getId() + "/resume/view";
+                String resumeUrl = APPLICATION_URL + app.getId() + "/resume/view";
                 Cell linkCell = row.createCell(6);
                 linkCell.setCellValue(resumeUrl);
                 Hyperlink hyperlink = creationHelper.createHyperlink(HyperlinkType.URL);
