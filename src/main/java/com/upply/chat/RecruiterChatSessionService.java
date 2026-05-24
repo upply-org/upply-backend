@@ -17,6 +17,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,9 @@ public class RecruiterChatSessionService {
     private static final int TOP_K = 50;
     private static final double SIMILARITY_THRESHOLD = 0.5;
     private static final String NO_CANDIDATES = "No relevant candidates found for this query.";
+
+    @Value("${app.recruter-application-url}")
+    private String APPLICATION_BASE_URL;
 
     public RecruiterChatSessionService(@Qualifier("resumeVectorStore") VectorStore vectorStore,
                                        @Qualifier("recruiterRagGeminiChatClient") ChatClient geminiChatClient,
@@ -189,11 +193,12 @@ public class RecruiterChatSessionService {
         Map<String, Object> meta = doc.getMetadata();
         return """
                 Candidate ID: %s
-                Application ID: %s
+                Application Link: %s%s
                 Type: %s
                 %s
                 """.formatted(
                 meta.get("userId"),
+                APPLICATION_BASE_URL,
                 meta.get("applicationId"),
                 meta.get("chunkType"),
                 doc.getText()

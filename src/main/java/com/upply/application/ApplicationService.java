@@ -97,7 +97,7 @@ public class ApplicationService {
                 List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
                 Map.of(
                         "jobTitle", job.getTitle(),
-                        "company", "TODO", //TODO
+                        "company", job.getOrganization() != null  && job.getOrganization().getName() != null ? job.getOrganization().getName() : "N/A",
                         "status", ApplicationStatus.SUBMITTED.name()
                 )
         );
@@ -172,7 +172,8 @@ public class ApplicationService {
                 List.of(DispatchPayload.Channel.EMAIL, DispatchPayload.Channel.PUSH),
                 Map.of(
                         "jobTitle", application.getJob().getTitle(),
-                        "company", "TODO", //TODO
+                        "company", application.getJob().getOrganization().getName() != null
+                                && application.getJob().getOrganization() != null ? application.getJob().getOrganization().getName() : "N/A",
                         "status", application.getStatus()
                 )
         );

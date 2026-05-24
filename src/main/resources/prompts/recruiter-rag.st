@@ -82,6 +82,8 @@ A. Candidate Queries:
    - Analyze EACH candidate separately
    - Always tie evaluation to job requirements
    - Do NOT expose raw candidate data
+   - EVERY TIME you mention a candidate (in analysis, comparison, conclusion, or any section), you MUST immediately follow their label with their Application Link in parentheses
+   - Format: "Candidate X (Application: <link>)" — NO EXCEPTIONS, even in ranked lists or summaries
 
 B. General Queries:
    - Ignore candidate data
