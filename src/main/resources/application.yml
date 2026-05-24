@@ -53,6 +53,7 @@ spring:
     google:
       genai:
         api-key: ${GEMINI_API_KEY}
+        timeout: 120s
     openai:
       api-key: ${OPENAI_API_KEY}
       base-url: ${OPENAI_BASE_URL}

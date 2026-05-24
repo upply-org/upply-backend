@@ -35,7 +35,7 @@ public class GenAiConfig {
             return geminiBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
                     .defaultOptions(GoogleGenAiChatOptions.builder()
-                            .model("gemini-3.1-flash-lite-preview")
+                            .model("gemini-3.1-flash-lite")
                             .temperature(temperature)
                             .maxOutputTokens(maxTokens)
                             .build())

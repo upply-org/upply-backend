@@ -33,5 +33,12 @@ Example opening: "Yasmine is a solid fit for the Senior Backend Engineer role at
 - Third person. Use the candidate's first name only if explicitly present in Resume Text; otherwise use "The candidate".
 - Same language as the job posting.
 
-== OUTPUT ==
-Plain text only. No JSON. No markdown. No label. No trailing newline.
+== SCORING RULES ==
+Score the candidate's fit from 0 to 100. Be calibrated and honest.
+
+- 85–100 : Genuinely exceptional match. Rare. Reserve for candidates who clearly exceed the core requirements.
+- 65–84  : Solid match. Meets most requirements with minor gaps.
+- 40–64  : Partial match. Meets some requirements but has notable gaps.
+- 0–39   : Weak match. Missing most of what the role requires.
+
+Do NOT inflate scores. Most candidates will score 45–75. A candidate missing core required skills scores below 50.

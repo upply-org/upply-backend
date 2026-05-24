@@ -1,8 +1,8 @@
 package com.upply.application;
 
+import com.upply.application.dto.ApplicationSummaryResult;
 import com.upply.job.Job;
 import com.upply.profile.skill.Skill;
-import com.upply.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -30,21 +30,22 @@ public class ApplicationSummaryService {
     }
 
 
-    public String callAi(double score, Job job, String resumeTxt) {
+    public ApplicationSummaryResult callAi(Job job, String resumeTxt) {
+        String prompt = buildPrompt(job, resumeTxt);
         try {
             return geminiChatClient.prompt()
-                    .user(buildPrompt(score, job, resumeTxt))
+                    .user(prompt)
                     .call()
-                    .content();
+                    .entity(ApplicationSummaryResult.class);
         } catch (Exception e) {
             return groqChatClient.prompt()
-                    .user(buildPrompt(score, job, resumeTxt))
+                    .user(prompt)
                     .call()
-                    .content();
+                    .entity(ApplicationSummaryResult.class);
         }
     }
 
-    private String buildPrompt(double score, Job job, String resumeTxt) {
+    private String buildPrompt(Job job, String resumeTxt) {
 
 
         String jobSkills = job.getSkills().isEmpty()
@@ -57,7 +58,7 @@ public class ApplicationSummaryService {
                 Title          : %s
                 Seniority      : %s
                 Required Skills: %s
-                
+
                 == CANDIDATE ==
                 Resume Text:
                 \"\"\"
