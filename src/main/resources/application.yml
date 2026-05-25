@@ -129,6 +129,11 @@ app:
   export:
     task-expire-seconds: ${TASK_EXPIRE_SECONDS}
     cleanup-interval-ms: ${SCULDER_CLEANUP_TIME}
+  model:
+    google-lite-model: ${GOOGLE_LITE_MODEL}
+    google-full-model: ${GOOGLE_FULL_MODEL}
+    groq-lite-model: ${GROQ_LITE_MODEL}
+    groq-full-model: ${GROQ_FULL_MODEL}
 
 azure:
   storage:
