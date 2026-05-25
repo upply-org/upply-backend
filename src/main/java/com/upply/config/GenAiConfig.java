@@ -9,6 +9,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.google.genai.GoogleGenAiChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -23,6 +24,18 @@ public class GenAiConfig {
     private final ChatClient.Builder geminiBuilder;
     private final ChatClient.Builder groqBuilder;
 
+    @Value("${app.model.google-lite-model}")
+    private String googleLiteModel;
+
+    @Value("${app.model.google-full-model}")
+    private String googleFullModel;
+
+    @Value("${app.model.groq-lite-model}")
+    private String groqLiteModel;
+
+    @Value("${app.model.groq-full-model}")
+    private String groqFullModel;
+
     public GenAiConfig(
             @Qualifier("googleGenAiChatModel") ChatModel geminiModel,
             @Qualifier("openAiChatModel") ChatModel groqModel) {
@@ -35,7 +48,7 @@ public class GenAiConfig {
             return geminiBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
                     .defaultOptions(GoogleGenAiChatOptions.builder()
-                            .model("gemini-3.1-flash-lite")
+                            .model(googleLiteModel)
                             .temperature(temperature)
                             .maxOutputTokens(maxTokens)
                             .build())
@@ -50,7 +63,7 @@ public class GenAiConfig {
             return groqBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
                     .defaultOptions(OpenAiChatOptions.builder()
-                            .model("llama-3.3-70b-versatile")
+                            .model(groqLiteModel)
                             .temperature(temperature)
                             .maxTokens(maxTokens)
                             .build())
@@ -108,7 +121,7 @@ public class GenAiConfig {
             return geminiBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
                     .defaultOptions(GoogleGenAiChatOptions.builder()
-                            .model("gemini-3-flash-preview")
+                            .model(googleFullModel)
                             .temperature(0.3)
                             .maxOutputTokens(65536)
                             .thinkingBudget(4096)
@@ -128,7 +141,7 @@ public class GenAiConfig {
             return groqBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
                     .defaultOptions(OpenAiChatOptions.builder()
-                            .model("moonshotai/kimi-k2-instruct")
+                            .model(groqFullModel)
                             .temperature(0.3)
                             .maxTokens(8192)
                             .build())
