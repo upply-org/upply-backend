@@ -21,7 +21,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT a FROM Application a WHERE a.id = :applicationId AND a.job.postedBy.id = ?#{principal.getId()}")
     Optional<Application> findApplicationById(Long applicationId);
 
-    @Query("select a from Application a where a.applicant.id = ?#{principal.getId()} and a.id = :applicationId")
+    @EntityGraph(attributePaths = {"applicant", "job", "job.postedBy"})
+    @Query("select a from Application a where a.id = :applicationId and (a.applicant.id = ?#{principal.getId()} or a.job.postedBy.id =?#{principal.getId()})")
     Optional<Application> getApplicationById(Long applicationId);
 
     @Query("select  a from Application a where a.job.postedBy.id = ?#{principal.getId()} and a.job.id = :jobId")
