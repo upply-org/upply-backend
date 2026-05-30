@@ -21,7 +21,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     // like roles or authorities is fetched within the same open database session.
     // Without it, if those relationships are lazy-loaded,
     // you could get a LazyInitializationException later when Spring tries to access them outside the transaction.
-    @Transactional
+    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
 
         // pass email because it's the unique identifier of the user in the app
