@@ -111,6 +111,30 @@ public class OrganizationService {
                 jobs.isLast());
     }
 
+    public PageResponse<JobListResponse> getOrganizationJobsByStatus(Long orgId, JobStatus status, int pageNumber, int size) {
+
+        if (!organizationRepository.existsById(orgId)) {
+            throw new ResourceNotFoundException("Organization with ID " + orgId + " not found");
+        }
+
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("createdDate").descending());
+
+        var jobs = organizationRepository.findJobsByOrganizationIdAndStatus(orgId, status, pageable);
+
+        List<JobListResponse> jobResponses = jobs.stream()
+                .map(jobMapper::toJobListResponse)
+                .toList();
+
+        return new PageResponse<>(
+                jobResponses,
+                jobs.getNumber(),
+                jobs.getSize(),
+                jobs.getTotalElements(),
+                jobs.getTotalPages(),
+                jobs.isFirst(),
+                jobs.isLast());
+    }
+
     @Transactional
     public ConnectToOrganizationResponse initiateConnection(
             @Valid ConnectToOrganizationRequest request, User user) throws JsonProcessingException {

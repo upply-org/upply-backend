@@ -2,6 +2,7 @@ package com.upply.organization;
 
 import com.upply.common.PageResponse;
 import com.upply.job.dto.JobListResponse;
+import com.upply.job.enums.JobStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.upply.organization.dto.ConnectToOrganizationRequest;
 import com.upply.organization.dto.ConnectToOrganizationResponse;
@@ -68,6 +69,26 @@ public class OrganizationController {
             @Min(value = 1, message = "Page size must be at least 1")
             @Max(value = 50, message = "Page size must not exceed 50") int size) {
         return ResponseEntity.ok(organizationService.getOrganizationOpenJobs(id, pageNumber, size));
+    }
+
+    @GetMapping("/{id}/jobs/{status}")
+    @Operation(
+            summary = "List jobs for an organization by status (paginated)",
+            description = "Retrieves a paginated list of jobs for the specified organization filtered by status. Valid statuses: open, paused, closed."
+    )
+    public ResponseEntity<PageResponse<JobListResponse>> getOrganizationJobsByStatus(
+            @Parameter(description = "The ID of the organization", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Job status to filter by", required = true, example = "open")
+            @PathVariable JobStatus status,
+            @Parameter(description = "Page number (0-indexed)", required = false, example = "0")
+            @RequestParam(name = "page", defaultValue = "0", required = false)
+            @Min(value = 0, message = "Page index must not be less than zero") int pageNumber,
+            @Parameter(description = "Page size", required = false, example = "10")
+            @RequestParam(name = "size", defaultValue = "10", required = false)
+            @Min(value = 1, message = "Page size must be at least 1")
+            @Max(value = 50, message = "Page size must not exceed 50") int size) {
+        return ResponseEntity.ok(organizationService.getOrganizationJobsByStatus(id, status, pageNumber, size));
     }
 
     @PostMapping("/connect")

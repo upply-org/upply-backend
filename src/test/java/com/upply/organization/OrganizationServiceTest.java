@@ -205,7 +205,89 @@ class OrganizationServiceTest {
         assertEquals(1, result.getContent().size());
     }
 
-    // ==================== initiateConnection tests ====================
+    @Test
+    @DisplayName("getOrganizationJobsByStatus should return paginated jobs for given status")
+    void shouldGetOrganizationJobsByStatusSuccessfully() {
+        List<Job> jobs = List.of(testJob);
+        PageImpl<Job> jobPage = new PageImpl<>(jobs, PageRequest.of(0, 10), 1);
+
+        when(organizationRepository.existsById(1L)).thenReturn(true);
+        when(organizationRepository.findJobsByOrganizationIdAndStatus(eq(1L), eq(JobStatus.OPEN), any(PageRequest.class)))
+                .thenReturn(jobPage);
+        when(jobMapper.toJobListResponse(testJob)).thenReturn(testJobResponse);
+
+        var result = organizationService.getOrganizationJobsByStatus(1L, JobStatus.OPEN, 0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        verify(organizationRepository).findJobsByOrganizationIdAndStatus(eq(1L), eq(JobStatus.OPEN), any(PageRequest.class));
+    }
+
+    @Test
+    @DisplayName("getOrganizationJobsByStatus should return paginated PAUSED jobs")
+    void shouldGetPausedJobsByStatus() {
+        testJob.setStatus(JobStatus.PAUSED);
+        List<Job> jobs = List.of(testJob);
+        PageImpl<Job> jobPage = new PageImpl<>(jobs, PageRequest.of(0, 10), 1);
+
+        when(organizationRepository.existsById(1L)).thenReturn(true);
+        when(organizationRepository.findJobsByOrganizationIdAndStatus(eq(1L), eq(JobStatus.PAUSED), any(PageRequest.class)))
+                .thenReturn(jobPage);
+        when(jobMapper.toJobListResponse(testJob)).thenReturn(testJobResponse);
+
+        var result = organizationService.getOrganizationJobsByStatus(1L, JobStatus.PAUSED, 0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    @DisplayName("getOrganizationJobsByStatus should return paginated CLOSED jobs")
+    void shouldGetClosedJobsByStatus() {
+        testJob.setStatus(JobStatus.CLOSED);
+        List<Job> jobs = List.of(testJob);
+        PageImpl<Job> jobPage = new PageImpl<>(jobs, PageRequest.of(0, 10), 1);
+
+        when(organizationRepository.existsById(1L)).thenReturn(true);
+        when(organizationRepository.findJobsByOrganizationIdAndStatus(eq(1L), eq(JobStatus.CLOSED), any(PageRequest.class)))
+                .thenReturn(jobPage);
+        when(jobMapper.toJobListResponse(testJob)).thenReturn(testJobResponse);
+
+        var result = organizationService.getOrganizationJobsByStatus(1L, JobStatus.CLOSED, 0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+    }
+
+    @Test
+    @DisplayName("getOrganizationJobsByStatus should throw ResourceNotFoundException when org not found")
+    void shouldThrowExceptionWhenOrgNotFoundInGetJobsByStatus() {
+        when(organizationRepository.existsById(999L)).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> organizationService.getOrganizationJobsByStatus(999L, JobStatus.OPEN, 0, 10)
+        );
+
+        assertTrue(exception.getMessage().contains("not found"));
+        verify(organizationRepository, never()).findJobsByOrganizationIdAndStatus(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("getOrganizationJobsByStatus should return empty page when no jobs match status")
+    void shouldReturnEmptyPageWhenNoJobsMatchStatus() {
+        PageImpl<Job> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
+
+        when(organizationRepository.existsById(1L)).thenReturn(true);
+        when(organizationRepository.findJobsByOrganizationIdAndStatus(eq(1L), eq(JobStatus.PAUSED), any(PageRequest.class)))
+                .thenReturn(emptyPage);
+
+        var result = organizationService.getOrganizationJobsByStatus(1L, JobStatus.PAUSED, 0, 10);
+
+        assertNotNull(result);
+        assertEquals(0, result.getContent().size());
+        assertTrue(result.isFirst());
+    }
 
     @Test
     @DisplayName("initiateConnection should throw exception for public email domain")
