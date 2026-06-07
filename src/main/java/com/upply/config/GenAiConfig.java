@@ -1,7 +1,6 @@
 package com.upply.config;
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
@@ -114,9 +113,7 @@ public class GenAiConfig {
     }
 
     @Bean
-    public ChatClient recruiterRagGeminiChatClient(
-            @Qualifier("recruiterRag") Resource prompt,
-            ChatMemory chatMemory) {
+    public ChatClient recruiterRagGeminiChatClient(@Qualifier("recruiterRag") Resource prompt) {
         try {
             return geminiBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
@@ -126,7 +123,6 @@ public class GenAiConfig {
                             .maxOutputTokens(65536)
                             .thinkingBudget(4096)
                             .build())
-                    .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                     .build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to load recruiter RAG prompt", e);
@@ -134,9 +130,7 @@ public class GenAiConfig {
     }
 
     @Bean
-    public ChatClient recruiterRagGroqChatClient(
-            @Qualifier("recruiterRag") Resource prompt,
-            ChatMemory chatMemory) {
+    public ChatClient recruiterRagGroqChatClient(@Qualifier("recruiterRag") Resource prompt) {
         try {
             return groqBuilder.clone()
                     .defaultSystem(prompt.getContentAsString(StandardCharsets.UTF_8))
@@ -145,7 +139,6 @@ public class GenAiConfig {
                             .temperature(0.3)
                             .maxTokens(8192)
                             .build())
-                    .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                     .build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to load recruiter RAG prompt", e);
@@ -156,7 +149,7 @@ public class GenAiConfig {
     public ChatMemory chatMemory(JdbcChatMemoryRepository jdbcChatMemoryRepository) {
         return MessageWindowChatMemory.builder()
                 .chatMemoryRepository(jdbcChatMemoryRepository)
-                .maxMessages(100)
+                .maxMessages(10)
                 .build();
     }
 }
