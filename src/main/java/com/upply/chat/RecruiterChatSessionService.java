@@ -13,6 +13,9 @@ import com.upply.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -114,48 +117,59 @@ public class RecruiterChatSessionService {
         RecruiterChatSession session = sessionRepository.findBySessionId(sessionId)
                 .orElseThrow(() -> new ResourceNotFoundException("No Session Found with this id"));
 
-        Long jobId = session.getJob().getId();
+        Job job = session.getJob();
+        Long jobId = job.getId();
 
         String candidateCtx = buildCandidateContext(jobId, prompt);
-        String jobCtx = buildJobContext(jobId);
+        String jobCtx = buildJobContext(job);
 
-        return callAiStream(geminiChatClient, sessionId, prompt, jobCtx, candidateCtx)
+        // Pre-fetch history exactly once — shared by both the primary call and any fallback.
+        List<Message> history = chatMemory.get(sessionId);
+
+        return callAiStream(geminiChatClient, sessionId, prompt, jobCtx, candidateCtx, history)
                 .doOnComplete(() -> log.info(
                         "AI_STREAM_SUCCESS provider=gemini sessionId={} jobId={}",
                         sessionId, jobId
                 ))
                 .onErrorResume(e -> {
-                        log.warn(
-                                "AI_FALLBACK provider=gemini sessionId={} jobId={} errorType={} message={}",
-                                sessionId,
-                                jobId,
-                                e.getClass().getSimpleName(),
-                                e.getMessage(),
-                                e
-                        );
+                    log.warn(
+                            "AI_FALLBACK provider=gemini sessionId={} jobId={} errorType={} message={}",
+                            sessionId,
+                            jobId,
+                            e.getClass().getSimpleName(),
+                            e.getMessage(),
+                            e
+                    );
 
-                        return callAiStream(groqChatClient, sessionId, prompt, jobCtx, candidateCtx)
-                                .doOnSubscribe(s -> log.info(
-                                        "AI_FALLBACK_EXEC provider=groq sessionId={} jobId={}",
-                                        sessionId, jobId
-                                ))
-                                .doOnComplete(() -> log.info(
-                                        "AI_STREAM_SUCCESS provider=groq sessionId={} jobId={}",
-                                        sessionId, jobId
-                                ));
+                    return callAiStream(groqChatClient, sessionId, prompt, jobCtx, candidateCtx, history)
+                            .doOnSubscribe(s -> log.info(
+                                    "AI_FALLBACK_EXEC provider=groq sessionId={} jobId={}",
+                                    sessionId, jobId
+                            ))
+                            .doOnComplete(() -> log.info(
+                                    "AI_STREAM_SUCCESS provider=groq sessionId={} jobId={}",
+                                    sessionId, jobId
+                            ));
                 });
     }
 
-    private Flux<String> callAiStream(ChatClient client, String sessionId, String prompt, String jobCtx, String candidateCtx) {
+    private Flux<String> callAiStream(ChatClient client, String sessionId, String prompt,
+                                      String jobCtx, String candidateCtx, List<Message> history) {
+        StringBuilder responseBuffer = new StringBuilder();
         return client.prompt()
                 .system(s -> s
                         .param("job_context", jobCtx)
                         .param("candidate_context", candidateCtx)
                         .param("query", prompt))
+                .messages(history)
                 .user(prompt)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, sessionId))
                 .stream()
-                .content();
+                .content()
+                .doOnNext(responseBuffer::append)
+                .doOnComplete(() -> {
+                    chatMemory.add(sessionId, new UserMessage(prompt));
+                    chatMemory.add(sessionId, new AssistantMessage(responseBuffer.toString()));
+                });
     }
 
     private String buildCandidateContext(Long jobId, String prompt) {
@@ -192,12 +206,10 @@ public class RecruiterChatSessionService {
     private String formatCandidate(Document doc) {
         Map<String, Object> meta = doc.getMetadata();
         return """
-                Candidate ID: %s
                 Application Link: %s%s
                 Type: %s
                 %s
                 """.formatted(
-                meta.get("userId"),
                 APPLICATION_BASE_URL,
                 meta.get("applicationId"),
                 meta.get("chunkType"),
@@ -205,10 +217,7 @@ public class RecruiterChatSessionService {
         );
     }
 
-    private String buildJobContext(Long jobId) {
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new ResourceNotFoundException("Job with ID " + jobId + " not found"));
-
+    private String buildJobContext(Job job) {
         return String.format("""
                         Job Title: %s
                         Type: %s
@@ -224,7 +233,7 @@ public class RecruiterChatSessionService {
                 job.getModel(),
                 job.getLocation(),
                 job.getDescription(),
-                jobRepository.findJobSkillNames(jobId).stream()
+                jobRepository.findJobSkillNames(job.getId()).stream()
                         .reduce((a, b) -> a + ", " + b)
                         .orElse("None")
         );
