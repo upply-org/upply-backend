@@ -62,6 +62,25 @@ public class AzureStorageService {
     }
 
     /**
+     * Upload file to azure blob storage with a custom blob name
+     * @param userId User id (for logging)
+     * @param fileData File content as an array of bytes
+     * @param blobName Custom blob name/path
+     * @return blob name of an uploaded file
+     */
+    public String uploadFile(Long userId, byte[] fileData, String blobName){
+        try{
+            BlobClient blobClient = containerClient.getBlobClient(blobName);
+            blobClient.upload(BinaryData.fromBytes(fileData),true);
+            log.info("File Uploaded for user {}: {}", userId, blobName);
+            return blobName;
+        }catch (Exception e) {
+            log.error("Error uploading file for user {}: {}", userId, e);
+            throw new RuntimeException("Failed to upload file", e);
+        }
+    }
+
+    /**
      * Download file to azure blob storage
      * @param blobName file UUID name
      * @return File data as bytes
@@ -81,10 +100,31 @@ public class AzureStorageService {
         }
     }
 
+    /**
+     * Delete file from azure blob storage
+     * @param blobName file blob name to delete
+     */
+    public void deleteFile(String blobName){
+        try {
+            BlobClient blobClient = containerClient.getBlobClient(blobName);
+            if(blobClient.exists()){
+                blobClient.delete();
+                log.info("File Deleted: {}", blobName);
+            }
+        } catch (Exception e) {
+            log.error("Error deleting file: {}", blobName, e);
+            throw new RuntimeException("Failed to delete file", e);
+        }
+    }
+
     private String fileBlobName(Long userId){
         String fileUUID = UUID.randomUUID().toString();
         String userIdString = String.valueOf(userId);
         return userIdString + "/" + fileUUID;
+    }
+
+    public String profilePictureBlobName(Long userId, String extension){
+        return "profile-pictures/" + userId + "/profile-picture." + extension;
     }
 
 }

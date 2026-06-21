@@ -26,6 +26,7 @@ public class UserMapper {
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .university(user.getUniversity())
+                .hasProfilePicture(user.getProfilePictureBlobName() != null)
                 .skills(user.getUserSkills().stream()
                         .map(skillMapper::toSkillResponse)
                         .collect(Collectors.toSet())

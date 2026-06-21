@@ -54,6 +54,8 @@ public class User implements UserDetails, Principal {
     private boolean accountActivated;
 
     private String deviceToken;
+    private String profilePictureBlobName;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdDate;

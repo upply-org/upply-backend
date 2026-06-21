@@ -416,6 +416,50 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
+    // profile picture
+
+    @PostMapping(value = "/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary = "Upload profile picture",
+            description = "Uploads or replaces the authenticated user's profile picture. Accepts JPG, JPEG, PNG, and WebP formats with a maximum size of 2MB."
+    )
+    public ResponseEntity<Void> uploadProfilePicture(
+            @Parameter(
+                    description = "The image file to upload (JPG, JPEG, PNG, or WebP format, max 2MB)",
+                    required = true
+            )
+            @RequestParam("file") MultipartFile file) throws IOException {
+        userService.uploadProfilePicture(file);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/profile-picture")
+    @Operation(
+            summary = "Get profile picture",
+            description = "Returns the authenticated user's profile picture as image bytes with the correct content type."
+    )
+    public ResponseEntity<byte[]> getProfilePicture() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_TYPE, userService.getProfilePictureContentType());
+        headers.setContentDisposition(
+                ContentDisposition.builder("inline")
+                        .build()
+        );
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(userService.getProfilePicture());
+    }
+
+    @DeleteMapping("/profile-picture")
+    @Operation(
+            summary = "Delete profile picture",
+            description = "Removes the authenticated user's profile picture."
+    )
+    public ResponseEntity<Void> deleteProfilePicture() {
+        userService.deleteProfilePicture();
+        return ResponseEntity.noContent().build();
+    }
+
     // device token
 
     @PostMapping("/device-token/{token}")

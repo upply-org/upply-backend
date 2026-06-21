@@ -386,6 +386,97 @@ public class UserService {
         }
     }
 
+    // profile picture
+
+    @Transactional
+    public void uploadProfilePicture(MultipartFile file) throws IOException {
+        validateImageFile(file);
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+
+        // Delete old profile picture if exists
+        if (user.getProfilePictureBlobName() != null) {
+            azureStorageService.deleteFile(user.getProfilePictureBlobName());
+        }
+
+        String blobName = azureStorageService.profilePictureBlobName(user.getId(), extension);
+        azureStorageService.uploadFile(user.getId(), file.getBytes(), blobName);
+
+        user.setProfilePictureBlobName(blobName);
+        userRepository.save(user);
+    }
+
+    public byte[] getProfilePicture() {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        if (user.getProfilePictureBlobName() == null) {
+            throw new ResourceNotFoundException("No profile picture found");
+        }
+
+        return azureStorageService.downloadFile(user.getProfilePictureBlobName());
+    }
+
+    public String getProfilePictureContentType() {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        if (user.getProfilePictureBlobName() == null) {
+            throw new ResourceNotFoundException("No profile picture found");
+        }
+
+        String blobName = user.getProfilePictureBlobName();
+        if (blobName.endsWith(".png")) return "image/png";
+        if (blobName.endsWith(".webp")) return "image/webp";
+        return "image/jpeg";
+    }
+
+    @Transactional
+    public void deleteProfilePicture() {
+        User user = userRepository.getCurrentUser()
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
+
+        if (user.getProfilePictureBlobName() == null) {
+            throw new ResourceNotFoundException("No profile picture found");
+        }
+
+        azureStorageService.deleteFile(user.getProfilePictureBlobName());
+        user.setProfilePictureBlobName(null);
+        userRepository.save(user);
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        long MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+
+        if (file == null || file.isEmpty()) {
+            throw new OperationNotPermittedException("File is empty");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new OperationNotPermittedException("File name is missing");
+        }
+
+        String lowerName = originalFilename.toLowerCase();
+        if (!(lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")
+                || lowerName.endsWith(".png") || lowerName.endsWith(".webp"))) {
+            throw new OperationNotPermittedException("Only JPG, JPEG, PNG, and WebP images are allowed");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png")
+                || contentType.equals("image/webp"))) {
+            throw new OperationNotPermittedException("Only JPG, JPEG, PNG, and WebP images are allowed");
+        }
+
+        if (file.getSize() > MAX_IMAGE_SIZE) {
+            throw new OperationNotPermittedException("Image size exceeds the 2MB limit");
+        }
+    }
+
     // mobile device token
 
     public void saveDeviceToken(String deviceToken) {
