@@ -20,6 +20,7 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String university;
+    private boolean hasProfilePicture;
     private Set<SkillResponse> skills;
     private List<ExperienceResponse> experiences;
     private List<ProjectResponse> projects;

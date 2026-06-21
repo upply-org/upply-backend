@@ -8,6 +8,7 @@ import com.upply.profile.project.*;
 import com.upply.profile.project.dto.ProjectMapper;
 import com.upply.profile.project.dto.ProjectRequest;
 import com.upply.profile.project.dto.ProjectResponse;
+import com.upply.profile.resume.AzureStorageService;
 import com.upply.profile.skill.*;
 import com.upply.profile.skill.dto.SkillMapper;
 import com.upply.profile.skill.dto.SkillRequest;
@@ -19,6 +20,7 @@ import com.upply.profile.socialLink.*;
 import com.upply.profile.socialLink.dto.SocialLinkMapper;
 import com.upply.profile.socialLink.dto.SocialLinkRequest;
 import com.upply.profile.socialLink.dto.SocialLinkResponse;
+import com.upply.exception.custom.OperationNotPermittedException;
 import com.upply.user.dto.UserMapper;
 import com.upply.user.dto.UserRequest;
 import com.upply.user.dto.UserResponse;
@@ -33,9 +35,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -80,6 +84,9 @@ class UserServiceTest {
 
     @Mock
     private OrganizationMapper organizationMapper;
+
+    @Mock
+    private AzureStorageService azureStorageService;
 
     @InjectMocks
     private UserService userService;
@@ -1117,5 +1124,294 @@ class UserServiceTest {
         verify(userRepository).getCurrentUser();
         verify(organizationMapper, never()).toResponse(any());
     }
-}
+    // Profile picture tests
 
+    @Test
+    @DisplayName("uploadProfilePicture should upload picture successfully")
+    void shouldUploadProfilePictureSuccessfully() throws IOException {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.png", "image/png", new byte[1024]
+        );
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(azureStorageService.profilePictureBlobName(1L, "png"))
+                .thenReturn("profile-pictures/1/profile-picture.png");
+        when(azureStorageService.uploadFile(eq(1L), any(byte[].class), eq("profile-pictures/1/profile-picture.png")))
+                .thenReturn("profile-pictures/1/profile-picture.png");
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        userService.uploadProfilePicture(file);
+
+        assertEquals("profile-pictures/1/profile-picture.png", testUser.getProfilePictureBlobName());
+        verify(azureStorageService).uploadFile(eq(1L), any(byte[].class), eq("profile-pictures/1/profile-picture.png"));
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should delete old picture before uploading new one")
+    void shouldDeleteOldProfilePictureBeforeUploadingNew() throws IOException {
+        testUser.setProfilePictureBlobName("profile-pictures/1/profile-picture.jpg");
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "new-avatar.png", "image/png", new byte[1024]
+        );
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(azureStorageService.profilePictureBlobName(1L, "png"))
+                .thenReturn("profile-pictures/1/profile-picture.png");
+        when(azureStorageService.uploadFile(eq(1L), any(byte[].class), eq("profile-pictures/1/profile-picture.png")))
+                .thenReturn("profile-pictures/1/profile-picture.png");
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        userService.uploadProfilePicture(file);
+
+        verify(azureStorageService).deleteFile("profile-pictures/1/profile-picture.jpg");
+        verify(azureStorageService).uploadFile(eq(1L), any(byte[].class), eq("profile-pictures/1/profile-picture.png"));
+        assertEquals("profile-pictures/1/profile-picture.png", testUser.getProfilePictureBlobName());
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should throw exception when user not found")
+    void shouldThrowExceptionWhenUserNotFoundInUploadProfilePicture() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.png", "image/png", new byte[1024]
+        );
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.uploadProfilePicture(file)
+        );
+
+        verify(azureStorageService, never()).uploadFile(any(), any(byte[].class), any());
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should reject empty file")
+    void shouldRejectEmptyFileForProfilePicture() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.png", "image/png", new byte[0]
+        );
+
+        assertThrows(
+                OperationNotPermittedException.class,
+                () -> userService.uploadProfilePicture(file)
+        );
+
+        verify(userRepository, never()).getCurrentUser();
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should reject invalid file extension")
+    void shouldRejectInvalidFileExtensionForProfilePicture() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.gif", "image/gif", new byte[1024]
+        );
+
+        OperationNotPermittedException exception = assertThrows(
+                OperationNotPermittedException.class,
+                () -> userService.uploadProfilePicture(file)
+        );
+
+        assertEquals("Only JPG, JPEG, PNG, and WebP images are allowed", exception.getMessage());
+        verify(userRepository, never()).getCurrentUser();
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should reject invalid content type")
+    void shouldRejectInvalidContentTypeForProfilePicture() {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.png", "application/pdf", new byte[1024]
+        );
+
+        OperationNotPermittedException exception = assertThrows(
+                OperationNotPermittedException.class,
+                () -> userService.uploadProfilePicture(file)
+        );
+
+        assertEquals("Only JPG, JPEG, PNG, and WebP images are allowed", exception.getMessage());
+        verify(userRepository, never()).getCurrentUser();
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should reject file exceeding 2MB")
+    void shouldRejectOversizedFileForProfilePicture() {
+        byte[] largeContent = new byte[3 * 1024 * 1024]; // 3 MB
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.png", "image/png", largeContent
+        );
+
+        OperationNotPermittedException exception = assertThrows(
+                OperationNotPermittedException.class,
+                () -> userService.uploadProfilePicture(file)
+        );
+
+        assertEquals("Image size exceeds the 2MB limit", exception.getMessage());
+        verify(userRepository, never()).getCurrentUser();
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should accept JPEG file")
+    void shouldAcceptJpegFileForProfilePicture() throws IOException {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.jpg", "image/jpeg", new byte[1024]
+        );
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(azureStorageService.profilePictureBlobName(1L, "jpg"))
+                .thenReturn("profile-pictures/1/profile-picture.jpg");
+        when(azureStorageService.uploadFile(eq(1L), any(byte[].class), eq("profile-pictures/1/profile-picture.jpg")))
+                .thenReturn("profile-pictures/1/profile-picture.jpg");
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        userService.uploadProfilePicture(file);
+
+        assertEquals("profile-pictures/1/profile-picture.jpg", testUser.getProfilePictureBlobName());
+    }
+
+    @Test
+    @DisplayName("uploadProfilePicture should accept WebP file")
+    void shouldAcceptWebpFileForProfilePicture() throws IOException {
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "avatar.webp", "image/webp", new byte[1024]
+        );
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(azureStorageService.profilePictureBlobName(1L, "webp"))
+                .thenReturn("profile-pictures/1/profile-picture.webp");
+        when(azureStorageService.uploadFile(eq(1L), any(byte[].class), eq("profile-pictures/1/profile-picture.webp")))
+                .thenReturn("profile-pictures/1/profile-picture.webp");
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        userService.uploadProfilePicture(file);
+
+        assertEquals("profile-pictures/1/profile-picture.webp", testUser.getProfilePictureBlobName());
+    }
+
+    @Test
+    @DisplayName("getProfilePicture should return image bytes when picture exists")
+    void shouldGetProfilePictureSuccessfully() {
+        byte[] imageBytes = new byte[]{1, 2, 3, 4, 5};
+        testUser.setProfilePictureBlobName("profile-pictures/1/profile-picture.png");
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(azureStorageService.downloadFile("profile-pictures/1/profile-picture.png")).thenReturn(imageBytes);
+
+        byte[] result = userService.getProfilePicture();
+
+        assertArrayEquals(imageBytes, result);
+        verify(azureStorageService).downloadFile("profile-pictures/1/profile-picture.png");
+    }
+
+    @Test
+    @DisplayName("getProfilePicture should throw exception when no picture exists")
+    void shouldThrowExceptionWhenNoProfilePictureExists() {
+        testUser.setProfilePictureBlobName(null);
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.getProfilePicture()
+        );
+
+        assertEquals("No profile picture found", exception.getMessage());
+        verify(azureStorageService, never()).downloadFile(any());
+    }
+
+    @Test
+    @DisplayName("getProfilePicture should throw exception when user not found")
+    void shouldThrowExceptionWhenUserNotFoundInGetProfilePicture() {
+        when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.getProfilePicture()
+        );
+    }
+
+    @Test
+    @DisplayName("getProfilePictureContentType should return image/png for PNG")
+    void shouldReturnPngContentType() {
+        testUser.setProfilePictureBlobName("profile-pictures/1/profile-picture.png");
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        assertEquals("image/png", userService.getProfilePictureContentType());
+    }
+
+    @Test
+    @DisplayName("getProfilePictureContentType should return image/webp for WebP")
+    void shouldReturnWebpContentType() {
+        testUser.setProfilePictureBlobName("profile-pictures/1/profile-picture.webp");
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        assertEquals("image/webp", userService.getProfilePictureContentType());
+    }
+
+    @Test
+    @DisplayName("getProfilePictureContentType should return image/jpeg for JPG")
+    void shouldReturnJpegContentType() {
+        testUser.setProfilePictureBlobName("profile-pictures/1/profile-picture.jpg");
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        assertEquals("image/jpeg", userService.getProfilePictureContentType());
+    }
+
+    @Test
+    @DisplayName("getProfilePictureContentType should throw exception when no picture exists")
+    void shouldThrowExceptionWhenNoProfilePictureForContentType() {
+        testUser.setProfilePictureBlobName(null);
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.getProfilePictureContentType()
+        );
+    }
+
+    @Test
+    @DisplayName("deleteProfilePicture should delete picture successfully")
+    void shouldDeleteProfilePictureSuccessfully() {
+        testUser.setProfilePictureBlobName("profile-pictures/1/profile-picture.png");
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+        when(userRepository.save(testUser)).thenReturn(testUser);
+
+        userService.deleteProfilePicture();
+
+        assertNull(testUser.getProfilePictureBlobName());
+        verify(azureStorageService).deleteFile("profile-pictures/1/profile-picture.png");
+        verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("deleteProfilePicture should throw exception when no picture exists")
+    void shouldThrowExceptionWhenDeletingNonExistentProfilePicture() {
+        testUser.setProfilePictureBlobName(null);
+
+        when(userRepository.getCurrentUser()).thenReturn(Optional.of(testUser));
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.deleteProfilePicture()
+        );
+
+        assertEquals("No profile picture found", exception.getMessage());
+        verify(azureStorageService, never()).deleteFile(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("deleteProfilePicture should throw exception when user not found")
+    void shouldThrowExceptionWhenUserNotFoundInDeleteProfilePicture() {
+        when(userRepository.getCurrentUser()).thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> userService.deleteProfilePicture()
+        );
+
+        verify(azureStorageService, never()).deleteFile(any());
+    }
+}
